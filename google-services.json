@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "6834062733",
+    "project_id": "trempc-353a7",
+    "storage_bucket": "trempc-353a7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6834062733:android:4b1cd43c6efc0b36a969c4",
+        "android_client_info": {
+          "package_name": "com.Arieh.TrempC"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDECKRa5Ex7TkmL0O8bFotcg0o4T6zl1D4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
