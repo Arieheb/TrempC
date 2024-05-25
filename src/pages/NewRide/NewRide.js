@@ -1,0 +1,35 @@
+import React from 'react';
+import { View, Text, StyleSheet, Button, TextInput } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+const NewRide = () => {
+    
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>ברוכים הבאים למסך הוספת נסיעה חדשה</Text>
+            <Text style={styles.subtitle}>שימוש מהנה</Text>
+            <TextInput placeholder="הזן מייל" />
+
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 16,
+    },
+    subtitle: {
+        fontSize: 18,
+        color: '#888',
+    },
+});
+
+export default NewRide;
