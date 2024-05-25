@@ -4,6 +4,8 @@ import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+// import { initializeApp } from 'firebase/app';
+// import { getFirestore, collection, getDoc } from 'firebase/firestore/lite';
 
 //// page imports ////
 import homePage from './src/pages/Home/Home.js';

@@ -2,6 +2,11 @@ import React, {useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, Image, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+
+// import { initializeApp } from 'firebase/app';
+// import { getFirestore, collection, getDoc } from 'firebase/firestore/lite';
+
+
 import Photo from '../../../assets/images/logo.png'
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
@@ -13,6 +18,8 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
+
+    
 
     const onSignInPress = () => {
         navigation.navigate('homeScreen');
