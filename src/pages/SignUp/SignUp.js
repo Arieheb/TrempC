@@ -1,6 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import "../../../firebaseConfig";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
 
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
@@ -16,12 +19,23 @@ const SignUp = () => {
     const navigation = useNavigation();
 
 
+    const auth = getAuth();
+    const createUser = () => {
+      createUserWithEmailAndPassword(auth, Email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          onChangeLoggedInUser(user.Email);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    };
 
 
-
-    const onRegisterPress = () => {
-        navigation.navigate('homeScreen');
-    }
+    // const onRegisterPress = () => {
+    //     navigation.navigate('homeScreen');
+    // }
     const onTermsOfUsePress = () => {
         console.warn('Terms of Use');
     }
@@ -68,8 +82,9 @@ const SignUp = () => {
 
                 <CustomButton 
                     text = "Register" 
-                    onPress={onRegisterPress} 
-
+                    onPress={createUser}
+                    onsucces={() => navigation.navigate('homeScreen')}
+                    
                     />
 
                 <Text style={styles.text}>By registering, you confirm that you accept our {''}
