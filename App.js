@@ -1,9 +1,8 @@
-import { StyleSheet } from 'react-native';
 import 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 // import { initializeApp } from 'firebase/app';
 // import { getFirestore, collection, getDoc } from 'firebase/firestore/lite';
 
@@ -29,13 +28,13 @@ const stack = createNativeStackNavigator()
 export default function App() {
   return (
     <NavigationContainer>
-      <stack.Navigator>
-        <stack.Screen name="loginScreen" component={loginPage} />
-        <stack.Screen name="forgotPasswordScreen" component={forgotPasswordPage}/>
-        <stack.Screen name="newPasswordScreen" component={newPasswordPage}  />
-        <stack.Screen name="confirmScreen" component={confirmEmailPage} />
-        <stack.Screen name="signUpScreen" component={signUpPage} />
-        <stack.Screen name="homeScreen" component={homePage} />
+      <stack.Navigator >
+        <stack.Screen name="loginScreen" component={loginPage} options={{title:null}}/>
+        <stack.Screen name="forgotPasswordScreen" component={forgotPasswordPage} options={{title:null}}/>
+        <stack.Screen name="newPasswordScreen" component={newPasswordPage} options={{title:null}} />
+        <stack.Screen name="confirmScreen" component={confirmEmailPage} options={{title:null}}/>
+        <stack.Screen name="signUpScreen" component={signUpPage} options={{title:null}}/>
+        <stack.Screen name="homeScreen" component={homePage} options={{title:null}}/>
 {/* 
         <stack.Screen name="profileScreen" component={profilePage} />
         <stack.Screen name="gListScreen" component={gListPage} />

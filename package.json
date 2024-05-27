@@ -10,17 +10,22 @@
   },
   "dependencies": {
     "@firebase/auth": "^1.7.3",
+    "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-firebase/app": "^20.0.0",
     "@react-native-firebase/auth": "^20.0.0",
     "@react-native-firebase/database": "^20.0.0",
+    "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
+    "async": "^3.2.5",
+    "drawer": "^0.0.2",
     "expo": "~51.0.8",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.1",
     "react": "18.2.0",
     "react-native": "0.74.1",
-    "react-native-gesture-handler": "^2.16.2"
+    "react-native-gesture-handler": "~2.16.1",
+    "react-native-reanimated": "~3.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

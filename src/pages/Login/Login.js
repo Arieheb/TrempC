@@ -1,7 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, Image, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
+import {db, auth} from '../../../firebaseConfig';
+import { addDoc, collection } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { Alert } from 'react-native';
 
 // import { initializeApp } from 'firebase/app';
 // import { getFirestore, collection, getDoc } from 'firebase/firestore/lite';
@@ -13,32 +16,67 @@ import CustomButton from '../../components/CustomButton';
 import SocialSignInButtons from '../../components/SocialSignInButtons';
 
 
-const Login = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+const Login = props => {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-    
 
-    const onSignInPress = () => {
-        navigation.navigate('homeScreen');
-    }
+    // const onSignInPress = () => {
+    //     navigation.navigate('homeScreen');
+    // }
 
     const onForgotPasswordPress = () => {
         navigation.navigate('forgotPasswordScreen');
     }
 
-    
 
     const signUpPress = () => {
         navigation.navigate('signUpScreen');
     }
 
 
+    const handleSignIn = () => {   
+        auth
+        signInWithEmailAndPassword(auth, username, password)
+        
+        .then((userCredential) => {
+            const user = userCredential.user;
+            navigation.navigate('homeScreen');
+          })
+          
+          .catch(error => {
+            if (!username.length && !password.length) {
+                Alert.alert('יש למלא את השדות הרלוונטיים');
+                return
+            }
+            if (error.code === 'auth/invalid-email') {
+               Alert.alert('אימייל לא תקין');
+               return
+            }
+            if(error.code === 'auth/user-not-found'){
+                Alert.alert('אימייל לא נמצא');
+                return 
+            }
+            if(error.code === 'auth/wrong-password'){
+                Alert.alert('סיסמא לא נכונה');
+                return 
+            }
+            if(error.code === 'auth/invalid-credential'){
+                Alert.alert('יש לבצע הרשמה');
+                return 
+            }
+            alert(error);
+          });
+          
+    }
+
+
+
     return (
         <ScrollView style={{backgroundColor: 'white'}}>
-            <KeyboardAvoidingView style={styles.container}>
+            <KeyboardAvoidingView style={styles.container}>            
                 <Image 
                     source={Photo} 
                     style={[styles.logo, {height:height*0.3}]} 
@@ -59,7 +97,7 @@ const Login = () => {
 
                 <CustomButton 
                     text = "Sign In" 
-                    onPress={onSignInPress}                 
+                    onPress={handleSignIn}                 
                     />
 
                 <CustomButton 
@@ -86,6 +124,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
+        
     },
     inputView: {
         backgroundColor: 'white',

@@ -1,8 +1,12 @@
-import React, {useState, useEffect} from 'react';
+import {React, useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import "../../../firebaseConfig";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+// import AppIntroSlider from 'react-native-app-intro-slider';
+import {db, auth} from '../../../firebaseConfig';
+import { addDoc, collection } from 'firebase/firestore';
+
+
 
 
 import CustomInput from '../../components/CustomInput';
@@ -11,7 +15,7 @@ import SocialSignInButtons from '../../components/SocialSignInButtons';
 
 const SignUp = () => {
     const [username, setUsername] = useState('');
-    const [Email, setEmail] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordRepeat, setPasswordRepeat] = useState('');
 
@@ -19,12 +23,28 @@ const SignUp = () => {
     const navigation = useNavigation();
 
 
+
+
+
+// const validateInfo = () => {
+//     if (username === '' || Email === '' || password === '' || passwordRepeat === '') {
+//         alert('Please fill in all fields');
+//         return false;
+//     }
+//     if (password !== passwordRepeat) {
+//         alert('Passwords do not match');
+//         return false;
+//     }
+//     return true;
+// };
+
     const auth = getAuth();
     const createUser = () => {
-      createUserWithEmailAndPassword(auth, Email, password)
+      createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          onChangeLoggedInUser(user.Email);
+          navigation.navigate('confirmScreen');
+          onChangeLoggedInUser(user.email);
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -62,7 +82,7 @@ const SignUp = () => {
                 
                 <CustomInput 
                     placeholder="Email" 
-                    value={Email} 
+                    value={email} 
                     setValue={setEmail}
                      />
                 
@@ -82,9 +102,7 @@ const SignUp = () => {
 
                 <CustomButton 
                     text = "Register" 
-                    onPress={createUser}
-                    onsucces={() => navigation.navigate('homeScreen')}
-                    
+                    onPress={createUser}                    
                     />
 
                 <Text style={styles.text}>By registering, you confirm that you accept our {''}
