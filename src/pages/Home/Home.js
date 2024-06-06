@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoidingView} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useState } from 'react';
+import db from '../../../firebaseConfig';
 
 const HomeScreen = () => {
     const navigation = useNavigation();
@@ -17,15 +19,27 @@ const HomeScreen = () => {
         navigation.navigate('signUpScreen');
     };
 
+
+    const [username, setUsername] = useState('');
+
+
+
+    const getData = async () => { 
+        const userCollection = await firestore().collection('users').get();
+        console.log(userCollection.docs[0].data());
+    }
+
+
+
     return (
 
         <ScrollView>
             <KeyboardAvoidingView style={styles.container}>
                 <Text style={styles.title}>ברוכים הבאים למסך הבית</Text>
                 <Text style={styles.subtitle}>שימוש מהנה</Text>
-                <Button title="למסך הכניסה" onPress={navigateToLogin} />
-                <Button title="לפרופיל האישי" onPress={navigateToProfile} />
-                <Button title="לרישום" onPress={navigateToSignUp} />
+                
+
+
                 <TextInput placeholder="הזן מייל" />
             </KeyboardAvoidingView>
         </ScrollView>

@@ -4,9 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 // import AppIntroSlider from 'react-native-app-intro-slider';
 import {db, auth} from '../../../firebaseConfig';
-import { addDoc, collection } from 'firebase/firestore';
-
-
+import { updateProfile } from "firebase/auth";
+import { addDoc, collection } from 'firebase/firestore'; 
 
 
 import CustomInput from '../../components/CustomInput';
@@ -14,10 +13,12 @@ import CustomButton from '../../components/CustomButton';
 import SocialSignInButtons from '../../components/SocialSignInButtons';
 
 const SignUp = () => {
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordRepeat, setPasswordRepeat] = useState('');
+    const [firstName, setFirstName] =useState("")
+    const [lastName, setLastName] =useState("")
+    const [phone, setPhone] =useState("")
 
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
@@ -43,13 +44,22 @@ const SignUp = () => {
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          navigation.navigate('confirmScreen');
           onChangeLoggedInUser(user.email);
+        })
+        navigation.navigate('homeScreen');
+        addDoc(collection(db,"users"),
+        {
+            
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
         });
+
+
+
+
+
     };
 
 
@@ -76,14 +86,24 @@ const SignUp = () => {
                 <Text style={styles.title}>Create new account</Text>
                 
                 <CustomInput 
-                    placeholder="Username" 
-                    value={username} 
-                    setValue={setUsername} />
+                    placeholder="First Name" 
+                    value={firstName} 
+                    setValue={setFirstName} />
+                <CustomInput 
+                    placeholder="Last Name" 
+                    value={lastName} 
+                    setValue={setLastName} />
                 
                 <CustomInput 
                     placeholder="Email" 
                     value={email} 
                     setValue={setEmail}
+                     />
+
+                <CustomInput 
+                    placeholder="Phone Number" 
+                    value={phone} 
+                    setValue={setPhone}
                      />
                 
                 <CustomInput 
