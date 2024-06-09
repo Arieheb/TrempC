@@ -5,13 +5,38 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 // import AppIntroSlider from 'react-native-app-intro-slider';
 import {db, auth} from '../../../firebaseConfig';
 import { updateProfile } from "firebase/auth";
-import { addDoc, collection } from 'firebase/firestore'; 
+import { addDoc, collection, setDoc } from 'firebase/firestore';
+import { doc } from "firebase/firestore";
+import { Alert } from 'react-native';
 
 
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import SocialSignInButtons from '../../components/SocialSignInButtons';
 
+
+const signUpProcess = async (email, password, firstName, lastName, phone) => {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uID = userCredential.user.uid;
+        console.log(uID);
+
+
+        await setDoc(doc(db, "users", uID),{
+            email: email,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
+            phone: phone,
+        });
+        console.log('User added to Firestore: ', uID);
+        Alert.alert('Success', 'User registered successfully!');
+    } catch (error) {
+    console.error('Error during sign up:', error);
+    Alert.alert('Error', error.message);
+  }
+};
+    
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -24,48 +49,13 @@ const SignUp = () => {
     const navigation = useNavigation();
 
 
-
-
-
-// const validateInfo = () => {
-//     if (username === '' || Email === '' || password === '' || passwordRepeat === '') {
-//         alert('Please fill in all fields');
-//         return false;
-//     }
-//     if (password !== passwordRepeat) {
-//         alert('Passwords do not match');
-//         return false;
-//     }
-//     return true;
-// };
-
-    const auth = getAuth();
-    const createUser = () => {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          onChangeLoggedInUser(user.email);
-        })
+    const handleSignUp = () => {
+        signUpProcess(email, password, firstName, lastName, phone);
         navigation.navigate('homeScreen');
-        addDoc(collection(db,"users"),
-        {
-            
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-        });
-
-
-
-
-
     };
 
 
-    // const onRegisterPress = () => {
-    //     navigation.navigate('homeScreen');
-    // }
+
     const onTermsOfUsePress = () => {
         console.warn('Terms of Use');
     }
@@ -122,7 +112,7 @@ const SignUp = () => {
 
                 <CustomButton 
                     text = "Register" 
-                    onPress={createUser}                    
+                    onPress={handleSignUp}                    
                     />
 
                 <Text style={styles.text}>By registering, you confirm that you accept our {''}
