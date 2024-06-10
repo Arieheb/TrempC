@@ -1,6 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import CustomInput from '../../components/CustomInput';
+import {db, auth} from '../../../firebaseConfig';
+import { updateProfile } from "firebase/auth";
+import { addDoc, collection, setDoc, getDoc } from 'firebase/firestore';
+import { doc } from "firebase/firestore";
+import { Alert } from 'react-native';
+
 
 const Profile = () => {
     const navigation = useNavigation();
@@ -21,9 +28,33 @@ const Profile = () => {
         <View style={styles.container}>
             <Text style={styles.title}>ברוכים הבאים למסך הפרופיל</Text>
             <Text style={styles.subtitle}>שימוש מהנה</Text>
-            <Button title="למסך הכניסה" onPress={navigateToLogin} />
-            <Button title="למסך הבית" onPress={navigateToHome} />
-            <Button title="לרישום" onPress={navigateToSignUp} />
+            <CustomInput 
+                    placeholder="First Name" 
+                    value={firstName} 
+                    setValue={setFirstName} />
+                <CustomInput 
+                    placeholder="Last Name" 
+                    value={lastName} 
+                    setValue={setLastName} />
+                
+                <CustomInput 
+                    placeholder="Email" 
+                    value={email} 
+                    setValue={setEmail}
+                     />
+
+                <CustomInput 
+                    placeholder="Phone Number" 
+                    value={phone} 
+                    setValue={setPhone}
+                     />
+                
+                <CustomInput 
+                    placeholder="Password" 
+                    value={password} 
+                    setValue={setPassword}
+                    secureTextEntry
+                     />
         </View>
     );
 };

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoiding
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import db from '../../../firebaseConfig';
+import CustomButton from '../../components/CustomButton';
 
 const HomeScreen = () => {
     const navigation = useNavigation();
@@ -37,7 +38,11 @@ const HomeScreen = () => {
             <KeyboardAvoidingView style={styles.container}>
                 <Text style={styles.title}>ברוכים הבאים למסך הבית</Text>
                 <Text style={styles.subtitle}>שימוש מהנה</Text>
-                
+                <CustomButton 
+                    title="למסך הפרופיל" 
+                    onPress={navigateToProfile}
+                    type = "PRIMARY"
+                     />
 
 
                 <TextInput placeholder="הזן מייל" />

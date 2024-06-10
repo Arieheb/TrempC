@@ -2,7 +2,6 @@ import {React, useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-// import AppIntroSlider from 'react-native-app-intro-slider';
 import {db, auth} from '../../../firebaseConfig';
 import { updateProfile } from "firebase/auth";
 import { addDoc, collection, setDoc } from 'firebase/firestore';
@@ -14,11 +13,12 @@ import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import SocialSignInButtons from '../../components/SocialSignInButtons';
 
+const uID ="";
 
 const signUpProcess = async (email, password, firstName, lastName, phone) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uID = userCredential.user.uid;
+        uID = userCredential.user.uid;
         console.log(uID);
 
 
@@ -51,7 +51,7 @@ const SignUp = () => {
 
     const handleSignUp = () => {
         signUpProcess(email, password, firstName, lastName, phone);
-        navigation.navigate('homeScreen');
+        navigation.navigate('homeScreen', {uID});
     };
 
 

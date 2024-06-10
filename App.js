@@ -13,8 +13,7 @@ import signUpPage from './src/pages/SignUp/SignUp.js';
 import confirmEmailPage from './src/pages/ConfirmEmail/ConfirmEmail.js';
 import forgotPasswordPage from './src/pages/ForgotPassword/ForgotPassword.js';
 import newPasswordPage from './src/pages/NewPassword/NewPassword.js';
-
-// import profilePage from './pages/Profile/Profile.js';
+import profilePage from './src/pages/Profile/Profile.js';
 // import gListPage from './pages/Group/GroupList.js';
 // import gNewPage from './pages/Group/NewGroup.js';
 // import historyPage from './pages/History/History.js';
@@ -35,8 +34,9 @@ export default function App() {
         <stack.Screen name="confirmScreen" component={confirmEmailPage} options={{title:null}}/>
         <stack.Screen name="signUpScreen" component={signUpPage} options={{title:null}}/>
         <stack.Screen name="homeScreen" component={homePage} options={{title:null}}/>
+        <stack.Screen name="profileScreen" component={profilePage} options={{title:null}}/>
 {/* 
-        <stack.Screen name="profileScreen" component={profilePage} />
+         />
         <stack.Screen name="gListScreen" component={gListPage} />
         <stack.Screen name="gNewScreen" component={gNewPage} />
         <stack.Screen name="historyScreen" component={historyPage} />
