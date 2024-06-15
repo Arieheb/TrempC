@@ -6,9 +6,6 @@ import { addDoc, collection } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Alert } from 'react-native';
 
-// import { initializeApp } from 'firebase/app';
-// import { getFirestore, collection, getDoc } from 'firebase/firestore/lite';
-
 
 import Photo from '../../../assets/images/logo.png'
 import CustomInput from '../../components/CustomInput';
@@ -22,10 +19,6 @@ const Login = props => {
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-
-    // const onSignInPress = () => {
-    //     navigation.navigate('homeScreen');
-    // }
 
     const onForgotPasswordPress = () => {
         navigation.navigate('forgotPasswordScreen');
@@ -43,7 +36,6 @@ const Login = props => {
         
         .then((userCredential) => {
             const user = userCredential.user;
-            // navigation.navigate('homeScreen');
             navigation.dispatch(CommonActions.reset({
                 index: 0,
                 routes: [

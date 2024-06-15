@@ -53,6 +53,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="homeScreen" component={homePage} options={{ title: 'Home', headerTitle: ""}} />
       <Drawer.Screen name="profileScreen" component={profilePage} options={{ title: 'Profile', headerTitle: "" }} />
     </Drawer.Navigator>
+    
   );
 }
 

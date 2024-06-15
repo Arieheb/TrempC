@@ -23,5 +23,6 @@ export default function CustomDrawerContent({ navigation, ...props }) {
         <Button title="Sign Out" onPress={handleSignOut} />
       </View>
     </DrawerContentScrollView>
+    
   );
 }
