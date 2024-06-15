@@ -38,13 +38,6 @@ const HomeScreen = () => {
             <KeyboardAvoidingView style={styles.container}>
                 <Text style={styles.title}>ברוכים הבאים למסך הבית</Text>
                 <Text style={styles.subtitle}>שימוש מהנה</Text>
-                <CustomButton 
-                    title="למסך הפרופיל" 
-                    onPress={navigateToProfile}
-                    type = "PRIMARY"
-                     />
-
-
                 <TextInput placeholder="הזן מייל" />
             </KeyboardAvoidingView>
         </ScrollView>

@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
-import SocialSignInButtons from '../../components/SocialSignInButtons';
 
 const ConfirmEmail = () => {
     const [code, setCode] = useState('');
@@ -14,7 +13,7 @@ const ConfirmEmail = () => {
 
 
     const onConfirmedPress = () => {
-        console.warn('Confirmed');
+        navigation.navigate('homeScreen');
     }
 
     const onResendPress = () => {
@@ -22,24 +21,10 @@ const ConfirmEmail = () => {
     }
     
     const onSignInPress = () => {
-        console.warn('Sign in');
+        navigation.navigate('loginScreen');
     }
     
 
-
-
-
-    const navigateToLogin = () => {
-        navigation.navigate('כניסה');
-    };
-
-    const navigateToProfile = () => {
-        navigation.navigate('פרופיל');
-    };
-    
-    const navigateToHome = () => {
-        navigation.navigate('בית');
-    };
 
     return (
         <ScrollView style={{backgroundColor: 'white'}}>

@@ -20,7 +20,7 @@ const SocialSignInButtons = () => {
                     text = "Sign In with facebook" 
                     onPress={signInFacebookPress}
                     bgColor={'#E7E4F4'}
-                    fgColor={'#4765A9'} 
+                    fgColor={'#4765A9'}
 
                     />
 
@@ -29,6 +29,7 @@ const SocialSignInButtons = () => {
                     onPress={signInGooglePress}
                     bgColor={'#FAE9EA'}
                     fgColor={'#DD4DD4'} 
+                    
 
                     />
     </>

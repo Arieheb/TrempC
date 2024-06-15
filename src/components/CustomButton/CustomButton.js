@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
 
     container_PRIMARY: {
       backgroundColor: '#3B71F3',
+      marginTop: 15,
 
     },
 
@@ -45,11 +46,12 @@ const styles = StyleSheet.create({
 
     container_TERTIARY: {},
 
+
     text:{
       fontWeight: 'bold',
       color: 'white',
     },
-
+    
     text_TERTIARY: {
         color: 'gray',
     },

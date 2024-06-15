@@ -7,55 +7,93 @@ import { updateProfile } from "firebase/auth";
 import { addDoc, collection, setDoc, getDoc } from 'firebase/firestore';
 import { doc } from "firebase/firestore";
 import { Alert } from 'react-native';
+import { useState } from 'react';
+import CustomButton from '../../components/CustomButton';
+import { ScrollView } from 'react-native-gesture-handler';
 
 
 const Profile = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] =useState("")
+    const [lastName, setLastName] =useState("")
+    const [phone, setPhone] =useState("")
+
+
     const navigation = useNavigation();
 
-    const navigateToLogin = () => {
-        navigation.navigate('loginScreen');
-    };
 
-    const navigateToHome = () => {
+    const saveDataPress = async () => {
+        console.log("saveData");
+        
+        // navigation.navigate('homeScreen');
+    }
+    const returnPress = () => {
+        console.log("return");
         navigation.navigate('homeScreen');
     };
-    
-    const navigateToSignUp = () => {
-        navigation.navigate('signUpScreen');
+    const signOutPress = () => {
+        console.log("signOut");
+        auth.signOut();
     };
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>ברוכים הבאים למסך הפרופיל</Text>
-            <Text style={styles.subtitle}>שימוש מהנה</Text>
-            <CustomInput 
-                    placeholder="First Name" 
-                    value={firstName} 
-                    setValue={setFirstName} />
-                <CustomInput 
-                    placeholder="Last Name" 
-                    value={lastName} 
-                    setValue={setLastName} />
-                
-                <CustomInput 
-                    placeholder="Email" 
-                    value={email} 
-                    setValue={setEmail}
-                     />
 
-                <CustomInput 
-                    placeholder="Phone Number" 
-                    value={phone} 
-                    setValue={setPhone}
-                     />
-                
-                <CustomInput 
-                    placeholder="Password" 
-                    value={password} 
-                    setValue={setPassword}
-                    secureTextEntry
-                     />
-        </View>
+    return (
+        <ScrollView>  
+        <View style={styles.container}>
+            
+            <CustomInput 
+                placeholder="First Name" 
+                value={firstName} 
+                setValue={setFirstName} />
+            
+            <CustomInput 
+                placeholder="Last Name" 
+                value={lastName} 
+                setValue={setLastName} />
+            
+            <CustomInput 
+                placeholder="Email" 
+                value={email} 
+                setValue={setEmail}
+                    />
+
+            <CustomInput 
+                placeholder="Phone Number" 
+                value={phone} 
+                setValue={setPhone}
+                    />
+            
+            {/* <CustomInput 
+                placeholder="Password" 
+                value={password} 
+                setValue={setPassword}
+                secureTextEntry
+                    /> */}
+            <CustomButton 
+                text = "return" 
+                onPress={returnPress}
+                bgColor={'red'}
+
+                    />       
+
+            <CustomButton 
+                text={"Save Changes"}
+                onPress={saveDataPress}
+                bgColor={'green'}
+                // type = "PRIMARY"
+                    />
+                  
+            <CustomButton 
+                text = "Sign Out" 
+                onPress={signOutPress}
+                bgColor={'lightgrey'}
+                border-color={'black'}
+            />     
+
+        </View>  
+        </ScrollView>
+        
     );
 };
 
@@ -65,6 +103,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
+        paddingTop: 30,
+        paddingHorizontal: 10
     },
     title: {
         fontSize: 24,

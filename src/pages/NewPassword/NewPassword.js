@@ -4,23 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
-import SocialSignInButtons from '../../components/SocialSignInButtons';
 
 const NewPassword = () => {
     const [code, setCode] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
-
-
-
-    const onSubmitPress = () => {
-    }
-    
-    const onSignInPress = () => {
-    }
-    
-
 
 
 

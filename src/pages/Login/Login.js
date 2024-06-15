@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, Image, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import {db, auth} from '../../../firebaseConfig';
 import { addDoc, collection } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -43,32 +43,47 @@ const Login = props => {
         
         .then((userCredential) => {
             const user = userCredential.user;
-            navigation.navigate('homeScreen');
+            // navigation.navigate('homeScreen');
+            navigation.dispatch(CommonActions.reset({
+                index: 0,
+                routes: [
+                    { name: 'homeScreen' }
+                ],
+            })
+            )
+            console.log(user.uid)
           })
           
           .catch(error => {
-            if (!username.length && !password.length) {
-                Alert.alert('יש למלא את השדות הרלוונטיים');
-                return
-            }
-            if (error.code === 'auth/invalid-email') {
-               Alert.alert('אימייל לא תקין');
-               return
-            }
-            if(error.code === 'auth/user-not-found'){
-                Alert.alert('אימייל לא נמצא');
-                return 
-            }
-            if(error.code === 'auth/wrong-password'){
-                Alert.alert('סיסמא לא נכונה');
-                return 
-            }
-            if(error.code === 'auth/invalid-credential'){
-                Alert.alert('יש לבצע הרשמה');
-                return 
-            }
-            alert(error);
-          });
+            Alert.alert('Error', error.message);
+            
+            
+            
+            
+            
+            // if (!username.length && !password.length) {
+            //     Alert.alert('יש למלא את השדות הרלוונטיים');
+            //     return
+            // }
+            // if (error.code === 'auth/invalid-email') {
+            //    Alert.alert('אימייל לא תקין');
+            //    return
+            // }
+            // if(error.code === 'auth/user-not-found'){
+            //     Alert.alert('אימייל לא נמצא');
+            //     return 
+            // }
+            // if(error.code === 'auth/wrong-password'){
+            //     Alert.alert('סיסמא לא נכונה');
+            //     return 
+            // }
+            // if(error.code === 'auth/invalid-credential'){
+            //     Alert.alert('Invalid Password');
+            //     return 
+            // }
+            // alert(error);
+          }
+        );
           
     }
 

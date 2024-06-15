@@ -1,7 +1,7 @@
 import {React, useState, useEffect} from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import { getAuth, createUserWithEmailAndPassword, sendSignInLinkToEmail } from "firebase/auth";
 import {db, auth} from '../../../firebaseConfig';
 import { updateProfile } from "firebase/auth";
 import { addDoc, collection, setDoc } from 'firebase/firestore';
@@ -12,31 +12,37 @@ import { Alert } from 'react-native';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import SocialSignInButtons from '../../components/SocialSignInButtons';
+uID ="";
 
-const uID ="";
+///////////////////////// Sign Up Process //////////////////////////
 
 const signUpProcess = async (email, password, firstName, lastName, phone) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        uID = userCredential.user.uid;
+        const uID = userCredential.user.uid;
         console.log(uID);
 
-
-        await setDoc(doc(db, "users", uID),{
+        await setDoc(doc(db, "users", uID), {
             email: email,
             password: password,
             firstName: firstName,
             lastName: lastName,
             phone: phone,
         });
-        console.log('User added to Firestore: ', uID);
+        
         Alert.alert('Success', 'User registered successfully!');
+        return true;  // Indicate that sign-up was successful
     } catch (error) {
-    console.error('Error during sign up:', error);
-    Alert.alert('Error', error.message);
-  }
+        Alert.alert('Error', error.message);
+        return false;  // Indicate that sign-up failed
+    }
 };
     
+
+///////////////////////// signUp.js action //////////////////////////
+
+
+
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -49,10 +55,26 @@ const SignUp = () => {
     const navigation = useNavigation();
 
 
-    const handleSignUp = () => {
-        signUpProcess(email, password, firstName, lastName, phone);
-        navigation.navigate('homeScreen', {uID});
+    const handleSignUp = async () => {
+        pattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+        if (email.match(pattern) == null) {
+            Alert.alert('Error', 'Invalid email address');
+            return;
+        }
+        else {
+            const isSignUpSuccessful = await signUpProcess(email, password, firstName, lastName, phone);
+        if (isSignUpSuccessful) {
+            navigation.dispatch(CommonActions.reset({
+                index: 0,
+                routes: [
+                    { name: 'homeScreen' }
+                ],
+            }));
+        }
+        }
+        
     };
+    
 
 
 

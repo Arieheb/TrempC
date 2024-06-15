@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
-import SocialSignInButtons from '../../components/SocialSignInButtons';
 
 const ForgotPassword = () => {
     const [username, setUsername] = useState('');
