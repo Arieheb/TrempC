@@ -7,6 +7,15 @@ import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import CustomButton from '../../components/CustomButton';
 
+
+
+
+/////// Copy General idea from Egoz project about handling user data and updating it
+
+
+
+
+
 const Profile = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -103,7 +112,7 @@ const Profile = () => {
                 <CustomInput 
                     placeholder="First Name" 
                     value={firstName} 
-                    setValue={setFirstName} 
+                    setValue={setFirstName}
                 />
                 <CustomInput 
                     placeholder="Last Name" 
@@ -156,6 +165,17 @@ const styles = StyleSheet.create({
         paddingTop: 30,
         paddingHorizontal: 10
     },
+    input: {
+        height:40,
+        borderRadius: 12,
+        paddingRight:10,
+        margin:5,
+        paddingLeft: 7,
+        borderWidth:1,
+        textAlign: 'right',
+        
+
+     },
 });
 
 export default Profile;
