@@ -28,9 +28,10 @@ const signUpProcess = async (email, password, firstName, lastName, phone) => {
             firstName: firstName,
             lastName: lastName,
             phone: phone,
+            pic: email
         });
         
-        Alert.alert('Success', 'User registered successfully!');
+        
         return true;  // Indicate that sign-up was successful
     } catch (error) {
         Alert.alert('Error', error.message);
@@ -71,6 +72,7 @@ const SignUp = () => {
                 ],
             }));
         }
+        Alert.alert('Success', 'User registered successfully!');
         }
         
     };
