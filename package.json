@@ -9,8 +9,10 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/react-native-action-sheet": "^4.1.0",
     "@firebase/auth": "^1.7.3",
     "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-community/datetimepicker": "^8.1.1",
     "@react-native-firebase/app": "^20.0.0",
     "@react-native-firebase/auth": "^20.0.0",
     "@react-native-firebase/database": "^20.0.0",
@@ -20,6 +22,7 @@
     "@react-navigation/stack": "^6.3.29",
     "async": "^3.2.5",
     "axios": "^1.7.2",
+    "datetimepicker": "^0.1.39",
     "dns": "^0.2.2",
     "drawer": "^0.0.2",
     "expo": "~51.0.8",

@@ -1,14 +1,20 @@
 import 'react-native-gesture-handler';
 import { StyleSheet, ImageBackground } from 'react-native';
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 // import { initializeApp } from 'firebase/app';
 // import { getFirestore, collection, getDoc } from 'firebase/firestore/lite';
 import logo from './assets/images/logo.png';
-import { useState, useEffect } from 'react';
 import { auth, bd, storage } from './firebaseConfig';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import CustomDrawerContent from './Drawer'; // Import your CustomDrawerContent component
+import { useNavigation } from '@react-navigation/native';
+import newRidePage from './src/pages/NewRide/NewRide.js';
+
+
 
 
 
@@ -49,9 +55,10 @@ function AuthStack() {
 
 function DrawerNavigator() {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator drawerContent={props => <CustomDrawerContent {...props} />}>
       <Drawer.Screen name="homeScreen" component={homePage} options={{ title: 'Home', headerTitle: ""}} />
       <Drawer.Screen name="profileScreen" component={profilePage} options={{ title: 'Profile', headerTitle: "" }} />
+      <Drawer.Screen name="newRideScreen" component={newRidePage} options={{ title: 'New Ride', headerTitle: "" }} />
     </Drawer.Navigator>
     
   );
@@ -59,29 +66,35 @@ function DrawerNavigator() {
 
 export default function App() {
   const [user, setUser] = useState();
-  const [loading, setLoad] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   function onAuthStateChanged(user) {
     setUser(user);
   }
 
   useEffect(() => {
-    const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
-    setTimeout(() => setLoad(false), 1000);
-    return subscriber; // unsubscribe on unmount
+    const subscriber = auth.onAuthStateChanged(user => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Unsubscribe from the listener when component unmounts
+    return subscriber;
   }, []);
 
   if (loading) {
     return (
-      <ImageBackground source={logo} style={{ width: '100%', height: '100%' }} resizeMode='contain'>
+      <ImageBackground source={logo} style={styles.imageContainer} resizeMode='contain'>
       </ImageBackground>
     );
   }
 
   return (
-    <NavigationContainer>
-      {user ? <DrawerNavigator /> : <AuthStack />}
-    </NavigationContainer>
+    <ActionSheetProvider>
+      <NavigationContainer>
+        {user ? <DrawerNavigator /> : <AuthStack />}
+      </NavigationContainer>
+    </ActionSheetProvider>
   );
 }
 
