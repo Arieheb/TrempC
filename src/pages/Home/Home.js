@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Button, TextInput, ScrollView, KeyboardAvoidingView} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
-import {db, auth, storage} from '../../../firebaseConfig';
+import db from '../../../firebaseConfig';
 import CustomButton from '../../components/CustomButton';
 
 const HomeScreen = () => {
@@ -25,6 +25,11 @@ const HomeScreen = () => {
 
 
 
+    const getData = async () => { 
+        const userCollection = await firestore().collection('users').get();
+        console.log(userCollection.docs[0].data());
+    }
+
 
 
     return (
@@ -34,7 +39,6 @@ const HomeScreen = () => {
                 <Text style={styles.title}>ברוכים הבאים למסך הבית</Text>
                 <Text style={styles.subtitle}>שימוש מהנה</Text>
                 <TextInput placeholder="הזן מייל" />
-                {/* <Button title="get information" onPress={getData} /> */}
             </KeyboardAvoidingView>
         </ScrollView>
         
