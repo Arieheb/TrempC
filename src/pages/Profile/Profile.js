@@ -36,8 +36,9 @@ const Profile = () => {
     const hasFetchedData = useRef(false); // Use ref to control fetching
     const { showActionSheetWithOptions } = useActionSheet(); // Use action sheet hook
 
-    const user = auth.currentUser;
+    console.log("1");
 
+    const user = auth.currentUser;
     useEffect(() => {
         if (user && !hasFetchedData.current) {
             const uID = user.uid;
