@@ -8,6 +8,9 @@ import { auth, db } from '../../../firebaseConfig';
 import { addDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 import { collection } from 'firebase/firestore';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const NewRideScreen = () => {
     const navigation = useNavigation();
@@ -145,21 +148,38 @@ const NewRideScreen = () => {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <KeyboardAwareScrollView contentContainerStyle={styles.scrollViewContainer}>
             <Text style={styles.headerText}>New Ride</Text>
-            <View style={styles.container}>
-                <CustomInput
-                    value={source}
-                    setValue={handleSourceChange}
-                    placeholder="Source Address"
-                    style={requiredFields.source && styles.required}
-                />
-                <CustomInput
-                    value={destination}
-                    setValue={handleDestinationChange}
-                    placeholder="Destination Address"
-                    style={requiredFields.destination && styles.required}
-                />
+            <View style = {styles.googleFind}>
+                    <GooglePlacesAutocomplete
+                        placeholder='Source Address'
+                        onPress={(data, details = null) => {
+                            // 'details' is provided when fetchDetails = true
+                            console.log(data, details);
+                            setSource(data.description);
+                        }}
+                        query={{
+                            key: 'AIzaSyBAJPGIdDzvvJP6Wos4PgwaKP4A2FZ2Nlk',
+                            lan: 'en',
+                        }}
+                    />
+                </View>
+                <View style = {styles.googleFind}>
+                    <GooglePlacesAutocomplete
+                        placeholder='Destination Address'
+                        style={styles.googleFind}
+                        onPress={(data, details = null) => {
+                            // 'details' is provided when fetchDetails = true
+                            console.log(data, details);
+                            setDestination(data.description);
+                        }}
+                        query={{
+                            key: 'AIzaSyBAJPGIdDzvvJP6Wos4PgwaKP4A2FZ2Nlk',
+                            lan: 'en',
+                        }}
+                    />
+                </View>
+                <View style = {styles.container}>
                 <View style={styles.dateTimeRow}>
                     <DateTimePicker
                         value={date}
@@ -219,8 +239,8 @@ const NewRideScreen = () => {
                     text="Return"
                     type="SECONDARY"
                 />
-            </View>
-        </ScrollView>
+                </View>
+        </KeyboardAwareScrollView>
     );
 };
 
@@ -228,6 +248,9 @@ const styles = StyleSheet.create({
     scrollViewContainer: {
         flexGrow: 1,
         paddingBottom: 20,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        
     },
     container: {
         flex: 1,
@@ -239,6 +262,15 @@ const styles = StyleSheet.create({
         fontSize: 35,
         paddingTop: 20,
         fontWeight: 'bold',
+    },
+    googleFind: {
+        width: 'center', 
+        margin: 10, 
+        borderColor: 'black',
+        borderWidth: 1,
+        borderRadius: 5,
+        // paddingHorizontal: 10,
+        // marginVertical: 7
     },
     dateTimeRow: {
         flexDirection: 'row',
