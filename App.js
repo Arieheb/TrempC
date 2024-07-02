@@ -29,7 +29,7 @@ import forgotPasswordPage from './src/pages/ForgotPassword/ForgotPassword.js';
 import newPasswordPage from './src/pages/NewPassword/NewPassword.js';
 import profilePage from './src/pages/Profile/Profile.js';
 // import gListPage from './pages/Group/GroupList.js';
-// import gNewPage from './pages/Group/NewGroup.js';
+import newGroupsPage from './src/pages/NewGroup/NewGroup.js';
 // import historyPage from './pages/History/History.js';
 // import newRidePage from './pages/NewRide/NewRide.js';
 // import SearchPage from './pages/Search/SearchRide.js';
@@ -59,6 +59,8 @@ function DrawerNavigator() {
       <Drawer.Screen name="homeScreen" component={homePage} options={{ title: 'Home', headerTitle: ""}} />
       <Drawer.Screen name="profileScreen" component={profilePage} options={{ title: 'Profile', headerTitle: "" }} />
       <Drawer.Screen name="newRideScreen" component={newRidePage} options={{ title: 'New Ride', headerTitle: "" }} />
+      <Drawer.Screen name="newGroupsScreen" component={newGroupsPage} options={{ title: 'New Group', headerTitle: "" }} />
+      
     </Drawer.Navigator>
     
   );

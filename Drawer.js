@@ -31,6 +31,7 @@ export default function CustomDrawerContent({ navigation, ...props }) {
     { icon: 'home', label: 'Home', onPress: () => navigation.navigate('homeScreen') },
     { icon: 'person', label: 'Profile', onPress: () => navigation.navigate('profileScreen') },
     { icon: 'car', label: 'New Ride', onPress: () => navigation.navigate('newRideScreen') },
+    { icon: 'people', label: 'New Group', onPress: () => navigation.navigate('newGroupsScreen') },
     // Add more drawer items as needed
   ];
 
