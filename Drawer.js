@@ -32,6 +32,9 @@ export default function CustomDrawerContent({ navigation, ...props }) {
     { icon: 'person', label: 'Profile', onPress: () => navigation.navigate('profileScreen') },
     { icon: 'car', label: 'New Ride', onPress: () => navigation.navigate('newRideScreen') },
     { icon: 'people', label: 'New Group', onPress: () => navigation.navigate('newGroupsScreen') },
+    { icon: 'list', label: 'Group List', onPress: () => navigation.navigate('gListScreen') },
+
+
     // Add more drawer items as needed
   ];
 
@@ -90,32 +93,3 @@ const styles = StyleSheet.create({
     marginLeft: 10, // Add left margin to the label for spacing
   },
 });
-
-// // Drawer.js
-// import React from 'react';
-// import { View, Button } from 'react-native';
-// import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-// import { auth } from './firebaseConfig';
-
-// export default function CustomDrawerContent({ navigation, ...props }) {
-//   const handleSignOut = () => {
-//     auth.signOut()
-//       .then(() => {
-//         navigation.reset({
-//           index: 0,
-//           routes: [{ name: 'loginScreen' }],
-//         });
-//       })
-//       .catch(error => console.error(error));
-//   };
-
-//   return (
-//     <DrawerContentScrollView {...props}>
-//       <DrawerItemList {...props} />
-//       <View style={{ marginTop: 20, paddingHorizontal: 10 }}>
-//         <Button title="Sign Out" onPress={handleSignOut} />
-//       </View>
-//     </DrawerContentScrollView>
-    
-//   );
-// }

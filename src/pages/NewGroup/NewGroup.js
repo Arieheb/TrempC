@@ -11,6 +11,7 @@ import CustomButton from '../../components/CustomButton';
 import UploadPhoto from '../../components/UploadImage/UploadImage';
 import communLogo from '../../../assets/images/communLogo.jpg';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { getDocs } from 'firebase/firestore';
 
 const NewGroup = () => {
     const [groupName, setGroupName] = useState('');
@@ -29,6 +30,7 @@ const NewGroup = () => {
 
     const navigation = useNavigation();
 
+
     const handleSave = async () => {
         if (!groupName) {
             Alert.alert('Error', 'Group Name is required');
@@ -39,7 +41,7 @@ const NewGroup = () => {
             groupName: groupName,
             desc: groupDescription,
             groupAdmins: [uId],
-            participants: [uId, ...selectedContacts],
+            participants: [uId], // Initialize with current user
             groupImage: '', // Placeholder for group image ID
         };
     
@@ -55,11 +57,68 @@ const NewGroup = () => {
             // Update the group image field with the group ID
             await updateDoc(groupRef, { groupImage: groupRef.id });
     
+            // Fetch all users from the database
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+            const normalizePhoneNumber = (phone) => {
+                return phone.replace(/[-\s]/g, '').replace(/^(\+972|0)/, '+972');
+            };
+    
+            const selectedContactDetails = selectedContacts.map(contactId => {
+                const contact = contacts.find(c => c.id === contactId);
+                const contactPhone = contact.phoneNumbers[0].number;
+                return { id: contactId, phone: normalizePhoneNumber(contactPhone) };
+            });
+    
+            const matchedUids = [];
+            const unmatchedContacts = [];
+    
+            users.forEach(user => {
+                console.log(`User: ${user.id}, Phone: ${user.phone}`);
+            });
+    
+            selectedContactDetails.forEach(contact => {
+                console.log(`Comparing selected contact phone: ${contact.phone}`);
+                const matchedUser = users.find(user => {
+                    const userPhone = user.phone ? normalizePhoneNumber(user.phone) : '';
+                    console.log(`Against user phone: ${userPhone}`);
+                    return userPhone === contact.phone;
+                });
+                if (matchedUser) {
+                    console.log(`Match found for contact: ${contact.id} with user: ${matchedUser.id}`);
+                    matchedUids.push(matchedUser.id);
+                } else {
+                    console.log(`No match found for contact: ${contact.id}`);
+                    unmatchedContacts.push(contact.id);
+                }
+            });
+    
+            // Update the participants field with matched UIDs
+            await updateDoc(groupRef, { participants: arrayUnion(...matchedUids) });
+    
+            // Log unmatched contacts
+            if (unmatchedContacts.length > 0) {
+                unmatchedContacts.forEach(contactId => {
+                    const contact = contacts.find(c => c.id === contactId);
+                    console.log('Unmatched Contact:', getContactName(contact));
+                });
+            }
+    
             // Update user's groups field
             const userDocRef = doc(db, 'users', uId);
             await updateDoc(userDocRef, {
                 groups: arrayUnion(groupRef.id)
             });
+    
+            // Update all other matched users' groups field
+            const updateParticipantsPromises = matchedUids.map(async (participantUid) => {
+                const participantDocRef = doc(db, 'users', participantUid);
+                await updateDoc(participantDocRef, {
+                    groups: arrayUnion(groupRef.id)
+                });
+            });
+            await Promise.all(updateParticipantsPromises);
     
             Alert.alert('Success', 'Group created successfully');
             navigation.dispatch(CommonActions.reset({
@@ -71,6 +130,140 @@ const NewGroup = () => {
             Alert.alert('Error', 'Failed to create group');
         }
     };
+    
+    // const handleSave = async () => {
+    //     if (!groupName) {
+    //         Alert.alert('Error', 'Group Name is required');
+    //         return;
+    //     }
+    
+    //     const groupData = {
+    //         groupName: groupName,
+    //         desc: groupDescription,
+    //         groupAdmins: [uId],
+    //         participants: [uId], // Initialize with current user
+    //         groupImage: '', // Placeholder for group image ID
+    //     };
+    
+    //     try {
+    //         const groupRef = await addDoc(collection(db, 'groups'), groupData);
+    //         console.log("Group created with ID: ", groupRef.id);
+    
+    //         // Upload the image after the group is created
+    //         if (tempImageUri) {
+    //             await uploadGroupImage(tempImageUri, groupRef.id);
+    //         }
+    
+    //         // Update the group image field with the group ID
+    //         await updateDoc(groupRef, { groupImage: groupRef.id });
+    
+    //         // Fetch all users from the database
+    //         const usersSnapshot = await getDocs(collection(db, 'users'));
+    //         const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    //         const normalizePhoneNumber = (phone) => {
+    //             return phone.replace(/[-\s]/g, '').replace(/^(\+972|0)/, '+972');
+    //         };
+    
+    //         const selectedContactDetails = selectedContacts.map(contactId => {
+    //             const contact = contacts.find(c => c.id === contactId);
+    //             const contactPhone = contact.phoneNumbers[0].number;
+    //             return { id: contactId, phone: normalizePhoneNumber(contactPhone) };
+    //         });
+    
+    //         const matchedUids = [];
+    //         const unmatchedContacts = [];
+    
+    //         selectedContactDetails.forEach(contact => {
+    //             const matchedUser = users.find(user => {
+    //                 return user.phoneNumbers && user.phoneNumbers.some(userPhone => normalizePhoneNumber(userPhone.number) === contact.phone);
+    //             });
+    //             if (matchedUser) {
+    //                 matchedUids.push(matchedUser.id);
+    //             } else {
+    //                 unmatchedContacts.push(contact.id);
+    //             }
+    //         });
+    
+    //         // Update the participants field with matched UIDs
+    //         await updateDoc(groupRef, { participants: arrayUnion(...matchedUids) });
+    
+    //         // Log unmatched contacts
+    //         if (unmatchedContacts.length > 0) {
+    //             unmatchedContacts.forEach(contactId => {
+    //                 const contact = contacts.find(c => c.id === contactId);
+    //                 console.log('Unmatched Contact:', getContactName(contact));
+    //             });
+    //         }
+    
+    //         // Update user's groups field
+    //         const userDocRef = doc(db, 'users', uId);
+    //         await updateDoc(userDocRef, {
+    //             groups: arrayUnion(groupRef.id)
+    //         });
+    
+    //         // Update all other matched users' groups field
+    //         const updateParticipantsPromises = matchedUids.map(async (participantUid) => {
+    //             const participantDocRef = doc(db, 'users', participantUid);
+    //             await updateDoc(participantDocRef, {
+    //                 groups: arrayUnion(groupRef.id)
+    //             });
+    //         });
+    //         await Promise.all(updateParticipantsPromises);
+    
+    //         Alert.alert('Success', 'Group created successfully');
+    //         navigation.dispatch(CommonActions.reset({
+    //             index: 0,
+    //             routes: [{ name: 'homeScreen' }],
+    //         }));
+    //     } catch (error) {
+    //         console.log('Error creating group:', error);
+    //         Alert.alert('Error', 'Failed to create group');
+    //     }
+    // };
+    
+    // const handleSave = async () => {
+    //     if (!groupName) {
+    //         Alert.alert('Error', 'Group Name is required');
+    //         return;
+    //     }
+    
+    //     const groupData = {
+    //         groupName: groupName,
+    //         desc: groupDescription,
+    //         groupAdmins: [uId],
+    //         participants: [uId, ...selectedContacts],
+    //         groupImage: '', // Placeholder for group image ID
+    //     };
+    
+    //     try {
+    //         const groupRef = await addDoc(collection(db, 'groups'), groupData);
+    //         console.log("Group created with ID: ", groupRef.id);
+    
+    //         // Upload the image after the group is created
+    //         if (tempImageUri) {
+    //             await uploadGroupImage(tempImageUri, groupRef.id);
+    //         }
+    
+    //         // Update the group image field with the group ID
+    //         await updateDoc(groupRef, { groupImage: groupRef.id });
+    
+    //         // Update user's groups field
+    //         const userDocRef = doc(db, 'users', uId);
+    //         await updateDoc(userDocRef, {
+    //             groups: arrayUnion(groupRef.id)
+    //         });
+    
+    //         Alert.alert('Success', 'Group created successfully');
+    //         navigation.dispatch(CommonActions.reset({
+    //             index: 0,
+    //             routes: [{ name: 'homeScreen' }],
+    //         }));
+    //     } catch (error) {
+    //         console.log('Error creating group:', error);
+    //         Alert.alert('Error', 'Failed to create group');
+    //     }
+    // };
     
 
     const uploadGroupImage = async (uri, groupId) => {
@@ -416,3 +609,9 @@ const styles = StyleSheet.create({
 });
 
 export default NewGroup;
+
+
+// When pressing confirm after choosing contacts:
+// 1) check which of the chosen contacts is listed in the Firebase Database. the check will compare the phone number of the selected contacts, and the phone values of all users in the Firebase database.
+// 2) if there is a match between the numbers, it will save that user's ID of the matching phone into the field called participants under groups in Firebase. if not, console.log the full name of the contacts not listed in Firebase.
+// 3) update all other user's information that they are part of the group

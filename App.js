@@ -28,8 +28,8 @@ import confirmEmailPage from './src/pages/ConfirmEmail/ConfirmEmail.js';
 import forgotPasswordPage from './src/pages/ForgotPassword/ForgotPassword.js';
 import newPasswordPage from './src/pages/NewPassword/NewPassword.js';
 import profilePage from './src/pages/Profile/Profile.js';
-// import gListPage from './pages/Group/GroupList.js';
 import newGroupsPage from './src/pages/NewGroup/NewGroup.js';
+import gListPage from './src/pages/GroupList/GroupList.js';
 // import historyPage from './pages/History/History.js';
 // import newRidePage from './pages/NewRide/NewRide.js';
 // import SearchPage from './pages/Search/SearchRide.js';
@@ -48,7 +48,8 @@ function AuthStack() {
       <Stack.Screen name="signUpScreen" component={signUpPage} options={{ title: null }} />
       <Stack.Screen name="homeScreen" component={homePage} options={{ title: null }} />
       <Stack.Screen name="profileScreen" component={profilePage} options={{ title: null }} />
-      
+      <Stack.Screen name="gListScreen" component={gListPage} options={{ title: 'Group List', headerTitle: "" }} />
+
     </Stack.Navigator>
   );
 }
@@ -60,7 +61,8 @@ function DrawerNavigator() {
       <Drawer.Screen name="profileScreen" component={profilePage} options={{ title: 'Profile', headerTitle: "" }} />
       <Drawer.Screen name="newRideScreen" component={newRidePage} options={{ title: 'New Ride', headerTitle: "" }} />
       <Drawer.Screen name="newGroupsScreen" component={newGroupsPage} options={{ title: 'New Group', headerTitle: "" }} />
-      
+      <Drawer.Screen name="gListScreen" component={gListPage} options={{ title: 'Group List', headerTitle: "" }} />
+
     </Drawer.Navigator>
     
   );

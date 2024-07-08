@@ -28,6 +28,7 @@ const signUpProcess = async (email, password, firstName, lastName, phone) => {
             firstName: firstName,
             lastName: lastName,
             phone: phone,
+            proPic: email
         });
         
         Alert.alert('Success', 'User registered successfully!');

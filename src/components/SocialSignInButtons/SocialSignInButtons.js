@@ -4,9 +4,7 @@ import CustomButton from '../CustomButton'
 
 const SocialSignInButtons = () => {
     
-    const signInFacebookPress = () => {
-        console.warn('facebook sign in');
-    }
+    
 
     const signInGooglePress = () => {
         console.warn('google sign in');
@@ -16,14 +14,6 @@ const SocialSignInButtons = () => {
   
     return (
     <>
-       <CustomButton 
-                    text = "Sign In with facebook" 
-                    onPress={signInFacebookPress}
-                    bgColor={'#E7E4F4'}
-                    fgColor={'#4765A9'}
-
-                    />
-
                 <CustomButton 
                     text = "Sign In with google" 
                     onPress={signInGooglePress}
@@ -31,7 +21,7 @@ const SocialSignInButtons = () => {
                     fgColor={'#DD4DD4'} 
                     
 
-                    />
+                />
     </>
   )
 }
