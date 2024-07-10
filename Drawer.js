@@ -1,9 +1,11 @@
 // Drawer.js
-import React from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons'; // Assuming you're using Ionicons for icons
-import { auth } from './firebaseConfig';
+import { auth, db, storage } from './firebaseConfig'; // Import firestore and storage
+import { getDownloadURL, ref } from 'firebase/storage';
+import { doc, getDoc } from 'firebase/firestore';
 
 // Custom drawer item component
 const CustomDrawerItem = ({ icon, label, onPress }) => (
@@ -16,6 +18,38 @@ const CustomDrawerItem = ({ icon, label, onPress }) => (
 );
 
 export default function CustomDrawerContent({ navigation, ...props }) {
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [fullName, setFullName] = useState('');
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user) {
+      const email = user.email.toLowerCase();
+      const profilePicRef = ref(storage, `profile/${email}`);
+
+      // Fetch the profile picture URL if it exists
+      getDownloadURL(profilePicRef)
+        .then(url => setProfilePicture(url))
+        .catch(() => {
+          // If there's an error (e.g., file doesn't exist), use the local profile picture
+          setProfilePicture(require('./assets/images/profile.png'));
+        });
+
+      // Fetch the user's full name
+      const userRef = doc(db, 'users', user.uid);
+      getDoc(userRef)
+        .then(docSnap => {
+          if (docSnap.exists()) {
+            const { firstName, lastName } = docSnap.data();
+            setFullName(`${firstName} ${lastName}`);
+          } else {
+            console.log('No such document!');
+          }
+        })
+        .catch(error => console.error('Error fetching user data:', error));
+    }
+  }, []);
+
   const handleSignOut = () => {
     auth.signOut()
       .then(() => {
@@ -29,18 +63,20 @@ export default function CustomDrawerContent({ navigation, ...props }) {
 
   const drawerItems = [
     { icon: 'home', label: 'Home', onPress: () => navigation.navigate('homeScreen') },
-    { icon: 'person', label: 'Profile', onPress: () => navigation.navigate('profileScreen') },
     { icon: 'car', label: 'New Ride', onPress: () => navigation.navigate('newRideScreen') },
     { icon: 'people', label: 'New Group', onPress: () => navigation.navigate('newGroupsScreen') },
     { icon: 'list', label: 'Group List', onPress: () => navigation.navigate('gListScreen') },
-
-
     // Add more drawer items as needed
   ];
 
   return (
     <View style={styles.container}>
       <DrawerContentScrollView {...props} style={styles.drawerContent}>
+        <TouchableOpacity style={styles.header} onPress={() => navigation.navigate('profileScreen')}>
+          {profilePicture && <Image source={typeof profilePicture === 'string' ? { uri: profilePicture } : profilePicture} style={styles.profilePicture} />}
+          <Text style={styles.fullName}>{fullName}</Text>
+        </TouchableOpacity>
+        
         {drawerItems.map((item, index) => (
           <CustomDrawerItem
             key={index}
@@ -74,6 +110,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 7,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
+    
+  },
+  profilePicture: {
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    marginRight: 10,
+  },
+  fullName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
   },
   footer: {
     flexDirection: 'row',
