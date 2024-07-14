@@ -47,7 +47,6 @@ const NewGroup = () => {
     
         try {
             const groupRef = await addDoc(collection(db, 'groups'), groupData);
-            console.log("Group created with ID: ", groupRef.id);
     
             // Upload the image after the group is created
             if (tempImageUri) {
@@ -74,22 +73,14 @@ const NewGroup = () => {
             const matchedUids = [];
             const unmatchedContacts = [];
     
-            users.forEach(user => {
-                console.log(`User: ${user.id}, Phone: ${user.phone}`);
-            });
-    
             selectedContactDetails.forEach(contact => {
-                console.log(`Comparing selected contact phone: ${contact.phone}`);
                 const matchedUser = users.find(user => {
                     const userPhone = user.phone ? normalizePhoneNumber(user.phone) : '';
-                    console.log(`Against user phone: ${userPhone}`);
                     return userPhone === contact.phone;
                 });
                 if (matchedUser) {
-                    console.log(`Match found for contact: ${contact.id} with user: ${matchedUser.id}`);
                     matchedUids.push(matchedUser.id);
                 } else {
-                    console.log(`No match found for contact: ${contact.id}`);
                     unmatchedContacts.push(contact.id);
                 }
             });
@@ -126,7 +117,6 @@ const NewGroup = () => {
                 routes: [{ name: 'homeScreen' }],
             }));
         } catch (error) {
-            console.log('Error creating group:', error);
             Alert.alert('Error', 'Failed to create group');
         }
     };
