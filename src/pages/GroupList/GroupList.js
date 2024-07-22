@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { db, auth, storage } from '../../../firebaseConfig';
 import { collection, query, where, getDocs, doc, updateDoc, arrayRemove, arrayUnion, deleteDoc, getDoc } from 'firebase/firestore';
+import { getDownloadURL } from 'firebase/storage';
+import { Image } from 'react-native';
 import { ref, deleteObject } from 'firebase/storage';
 import * as Contacts from 'expo-contacts';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -54,11 +56,28 @@ const GroupList = () => {
             });
     
             groupData.participantsDetails = participants;
+    
+            // Fetch group profile picture URL
+            if (groupData.groupImage) {
+                try {
+                    const imageRef = ref(storage, `groupPic/${groupData.groupImage}`);
+                    const profilePictureUrl = await getDownloadURL(imageRef);
+                    groupData.profilePictureUrl = profilePictureUrl;
+                } catch (error) {
+                    console.error("Error fetching profile picture URL:", error);
+                    groupData.profilePictureUrl = null;
+                }
+            } else {
+                groupData.profilePictureUrl = null;
+            }
+    
             return groupData;
         }));
         setGroups(groupsList);
         setGroupsLoading(false);
     };
+    
+    
     
 
     const preFetchContacts = async () => {
@@ -113,7 +132,6 @@ const GroupList = () => {
                             setGroups(groups.filter(g => g.id !== group.id));
                             Alert.alert('Success', 'Group deleted successfully');
                         } catch (error) {
-                            console.log('Error deleting group:', error);
                             Alert.alert('Error', 'Failed to delete group', error);
                         }
                     },
@@ -133,10 +151,8 @@ const GroupList = () => {
                     phoneNumber: userData.phoneNumber,
                 };
             } else {
-                console.log('No such document!');
             }
         } catch (error) {
-            console.log('Error getting document:', error);
         }
         return { fullName: 'Unknown', phoneNumber: 'Unknown' }; // Fallback in case of an error
     };
@@ -347,14 +363,25 @@ const GroupList = () => {
         return (
             <View>
                 <View style={styles.tableRow}>
-                    <Text style={styles.groupName}>{item.groupName}</Text>
+                    <View style={styles.profileAndName}>
+                        {item.profilePictureUrl ? (
+                            <Image source={{ uri: item.profilePictureUrl }} style={styles.profilePicture} />
+                        ) : (
+                            <View style={styles.profilePicturePlaceholder}>
+                                <Icon name="group" size={25} color="#ccc" />
+                            </View>
+                        )}
+                        <Text style={styles.groupName}>{item.groupName}</Text>
+                    </View>
                     <View style={styles.icons}>
                         <TouchableOpacity onPress={() => toggleGroup(item.id)} style={styles.iconButton}>
-                            <Icon name={expandedGroups.includes(item.id) ? 'caret-down' : 'caret-right'} size={25} />
+                            <Icon name={expandedGroups.includes(item.id) ? 'caret-down' : 'caret-right'} size={25} style={{paddingRight: 15}} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleAddParticipants(item)} style={styles.iconButton}>
-                            <Icon name="plus" size={25} color="grey" />
-                        </TouchableOpacity>
+                        {isAdmin && (
+                            <TouchableOpacity onPress={() => handleAddParticipants(item)} style={styles.iconButton}>
+                                <Icon name="plus" size={25} color="grey" style={{paddingRight: 15}} />
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity onPress={() => handleDeleteGroup(item)} style={styles.iconButton}>
                             <Icon name="trash" size={25} color="red" />
                         </TouchableOpacity>
@@ -375,7 +402,7 @@ const GroupList = () => {
                                     styles.participantName,
                                     participant.fullName === 'Me' && { fontStyle: 'italic' }
                                 ]}>
-                                    {participant.fullName} 
+                                    {participant.fullName}
                                     {item.groupAdmins.includes(participant.id) && (
                                         <Text style={{ fontStyle: 'italic', fontWeight: 'normal' }}> (admin)</Text>
                                     )}
@@ -476,7 +503,6 @@ const GroupList = () => {
         </View>
     );
 };
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -497,15 +523,35 @@ const styles = StyleSheet.create({
         borderBottomColor: '#ccc',
         alignItems: 'center',
     },
+    profileAndName: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    profilePicture: {
+        width: 50,
+        height: 50,
+        borderRadius: 30,
+        marginRight: 10,
+        marginLeft: 15
+    },
+    profilePicturePlaceholder: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#eee',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
     tableCell: {
         flex: 2,
         textAlign: 'left',
         marginLeft: 10,
     },
     groupName: {
-        marginLeft: 15,
         fontWeight: 'bold',
         fontSize: 16,
+        paddingLeft: 10,
     },
     icons: {
         flexDirection: 'row',
@@ -513,8 +559,7 @@ const styles = StyleSheet.create({
         marginRight: 15,
     },
     iconButton: {
-        marginHorizontal: 15,
-
+        marginHorizontal: 5,
     },
     participantsList: {
         paddingVertical: 10,
@@ -620,5 +665,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
+
 
 export default GroupList;
