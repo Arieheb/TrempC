@@ -65,8 +65,13 @@ const NewRide = () => {
     };
 
     const handleSave = () => {
-        if (!source || !dest || !driverName || !dPhone) {
+        if (!source || !dest || !driverName || !dPhone || !vacantPlaces) {
             Alert.alert('Error', 'Please fill in all required fields.');
+            return;
+        }
+
+        if (parseInt(vacantPlaces, 10) === 0) {
+            Alert.alert('Error', 'Vacant places cannot be 0. Please provide at least one place.');
             return;
         }
 
@@ -76,7 +81,7 @@ const NewRide = () => {
             date_time: Timestamp.fromDate(new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.getHours(), time.getMinutes())),
             driver_name: driverName,
             dPhone,
-            places: vacantPlaces ? parseInt(vacantPlaces, 10) : 0,
+            places: parseInt(vacantPlaces, 10),
             cost: rideCost ? parseFloat(rideCost) : 0,
             comment: driverComment || '',
             userId: user.uid,
@@ -206,7 +211,7 @@ const NewRide = () => {
                 )}
             </KeyboardAvoidingView>
 
-            <KeyboardAvoidingView style={{ alignItems: 'center'  }}>
+            <KeyboardAvoidingView style={{ alignItems: 'center' }}>
                 <CustomInput
                     setValue={setDriverName}
                     placeholder={driverName ? driverName : 'Driver Name'}
@@ -218,7 +223,7 @@ const NewRide = () => {
                 <CustomInput
                     value={vacantPlaces}
                     setValue={setVacantPlaces}
-                    placeholder="Vacant Places (Optional)"
+                    placeholder="Vacant Places*"
                     keyboardType="numeric"
                 />
                 <CustomInput
@@ -288,7 +293,7 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     itemContainer: {
-        
+
     }
 });
 
