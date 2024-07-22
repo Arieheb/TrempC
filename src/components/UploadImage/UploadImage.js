@@ -8,7 +8,7 @@ import { auth, storage } from '../../../firebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 
-const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload }) => {
+const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shouldFetch = true }) => {
     const user = auth.currentUser;
     const userEmail = user?.email || '';
 
@@ -16,19 +16,20 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload }) =>
     const { showActionSheetWithOptions } = useActionSheet();
 
     useEffect(() => {
-        const fetchProfilePicture = async () => {
-            if (storagePath === 'profile' && userEmail) {
+        if (shouldFetch) {
+            const fetchProfilePicture = async () => {
                 try {
-                    const url = await getDownloadURL(ref(storage, `${storagePath}/${userEmail}`));
+                    const name = storagePath === 'profile' ? userEmail : imageName;
+                    const url = await getDownloadURL(ref(storage, `${storagePath}/${name}`));
                     setImage(url);
                 } catch (error) {
                     console.log('Error downloading image:', error);
                 }
-            }
-        };
+            };
 
-        fetchProfilePicture();
-    }, [storagePath, userEmail]);
+            fetchProfilePicture();
+        }
+    }, [shouldFetch, storagePath, userEmail, imageName]);
 
     const showActionSheet = () => {
         const options = ['Upload from Gallery', 'Take a Picture', 'Cancel'];
@@ -60,7 +61,7 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload }) =>
 
             if (!result.cancelled && result.assets && result.assets.length > 0) {
                 const { uri } = result.assets[0];
-                const name = imageName || userEmail;
+                const name = storagePath === 'profile' ? userEmail : imageName;
 
                 setImage(uri);
                 onImageUpload && onImageUpload(uri);
@@ -90,7 +91,7 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload }) =>
 
             if (!result.cancelled && result.assets && result.assets.length > 0) {
                 const { uri } = result.assets[0];
-                const name = imageName || userEmail;
+                const name = storagePath === 'profile' ? userEmail : imageName;
 
                 setImage(uri);
                 onImageUpload && onImageUpload(uri);
