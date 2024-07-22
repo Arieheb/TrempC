@@ -65,15 +65,6 @@ const NewRide = () => {
     };
 
     const handleSave = () => {
-        console.log("Handle Save Triggered");
-        console.log("Source:", source);
-        console.log("Destination:", dest);
-        console.log("Driver Name:", driverName);
-        console.log("Driver Phone:", dPhone);
-        console.log("Places:", vacantPlaces);
-        console.log("Cost:", rideCost);
-        console.log("Comment:", driverComment);
-
         if (!source || !dest || !driverName || !dPhone) {
             Alert.alert('Error', 'Please fill in all required fields.');
             return;
@@ -119,7 +110,7 @@ const NewRide = () => {
 
             <KeyboardAvoidingView style={styles.addressRow}>
                 <GooglePlacesAutocomplete
-                    placeholder='Enter source address'
+                    placeholder='Enter source address*'
                     fetchDetails={true}
                     debounce={300}
                     onPress={(data, details = null) => {
@@ -145,7 +136,7 @@ const NewRide = () => {
                 />
 
                 <GooglePlacesAutocomplete
-                    placeholder='Enter destination address'
+                    placeholder='Enter destination address*'
                     fetchDetails={true}
                     debounce={300}
                     onPress={(data, details = null) => {

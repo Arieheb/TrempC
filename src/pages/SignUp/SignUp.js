@@ -11,7 +11,6 @@ import { Alert } from 'react-native';
 
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
-import SocialSignInButtons from '../../components/SocialSignInButtons';
 uID ="";
 
 ///////////////////////// Sign Up Process //////////////////////////
@@ -76,22 +75,9 @@ const SignUp = () => {
         
     };
     
-
-
-
-    const onTermsOfUsePress = () => {
-        console.warn('Terms of Use');
-    }
-    const onPrivacyPress = () => {
-        console.warn('Privacy policy');
-    }
-
     const onSignInPress = () => {
         navigation.navigate('loginScreen');
     }
-
-
-
 
     return (
         <ScrollView style={{backgroundColor: 'white'}}>
@@ -102,6 +88,7 @@ const SignUp = () => {
                     placeholder="First Name" 
                     value={firstName} 
                     setValue={setFirstName} />
+                    
                 <CustomInput 
                     placeholder="Last Name" 
                     value={lastName} 
@@ -136,24 +123,14 @@ const SignUp = () => {
                 <CustomButton 
                     text = "Register" 
                     onPress={handleSignUp}                    
-                    />
-
-                <Text style={styles.text}>By registering, you confirm that you accept our {''}
-                    <Text style={styles.link} onPress={onTermsOfUsePress}>Terms of Use</Text> and {''}
-                    <Text style={styles.link} onPress={onPrivacyPress}>Privacy policy</Text>
-                </Text>
-                
-                <SocialSignInButtons />
-                
+                    />                            
 
                 <CustomButton 
                     text = "Have an account? Sign In" 
                     onPress={onSignInPress} 
                     type = "TERTIARY"
-
                     />
 
-                
             </KeyboardAvoidingView>
         </ScrollView>
     );

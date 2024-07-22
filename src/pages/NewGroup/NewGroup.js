@@ -88,13 +88,13 @@ const NewGroup = () => {
             // Update the participants field with matched UIDs
             await updateDoc(groupRef, { participants: arrayUnion(...matchedUids) });
     
-            // Log unmatched contacts
-            if (unmatchedContacts.length > 0) {
-                unmatchedContacts.forEach(contactId => {
-                    const contact = contacts.find(c => c.id === contactId);
-                    console.log('Unmatched Contact:', getContactName(contact));
-                });
-            }
+            /////////// Log unmatched contacts  //////////
+            // if (unmatchedContacts.length > 0) {
+            //     unmatchedContacts.forEach(contactId => {
+            //         const contact = contacts.find(c => c.id === contactId);
+            //         console.log('Unmatched Contact:', getContactName(contact));
+            //     });
+            // }
     
             // Update user's groups field
             const userDocRef = doc(db, 'users', uId);
@@ -120,7 +120,6 @@ const NewGroup = () => {
             Alert.alert('Error', 'Failed to create group');
         }
     };
-    
 
     const uploadGroupImage = async (uri, groupId) => {
         try {
@@ -215,7 +214,6 @@ const NewGroup = () => {
         }
     };
     
-
     const handleConfirm = () => {
         setSelectedContacts(tempSelectedContacts);
         setModalVisible(false);
@@ -231,15 +229,19 @@ const NewGroup = () => {
     };
 
     const getContactName = (contact) => {
-        if (contact.name) return contact.name;
-        if (contact.firstName && contact.middleName && contact.lastName) return `${contact.firstName} ${contact.middleName} ${contact.lastName}`;
-        if (contact.firstName && contact.lastName) return `${contact.firstName} ${contact.lastName}`;
-        if (contact.firstName) return contact.firstName;
-        if (contact.lastName) return contact.lastName;
+        if (contact.name) 
+            return contact.name;
+        if (contact.firstName && contact.middleName && contact.lastName) 
+            return `${contact.firstName} ${contact.middleName} ${contact.lastName}`;
+        if (contact.firstName && contact.lastName) 
+            return `${contact.firstName} ${contact.lastName}`;
+        if (contact.firstName) 
+            return contact.firstName;
+        if (contact.lastName) 
+            return contact.lastName;
         return 'No Name';
     };
     
-
     const removeContact = (contactId) => {
         setSelectedContacts(selectedContacts.filter(id => id !== contactId));
     };
