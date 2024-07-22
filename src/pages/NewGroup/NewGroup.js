@@ -30,7 +30,6 @@ const NewGroup = () => {
 
     const navigation = useNavigation();
 
-
     const handleSave = async () => {
         if (!groupName) {
             Alert.alert('Error', 'Group Name is required');
@@ -131,7 +130,8 @@ const NewGroup = () => {
             await uploadTask;
     
             // Update group document with the image ID
-            await updateDoc(doc(db, 'groups', groupId), { groupImage: groupId });
+            const url = await getDownloadURL(storageRef);
+            await updateDoc(doc(db, 'groups', groupId), { groupImage: url });
         } catch (error) {
             console.log('Error uploading group image:', error);
         }
@@ -253,7 +253,8 @@ const NewGroup = () => {
                     storagePath="groupPic" 
                     imageName={groupName} 
                     defaultImage={communLogo} 
-                    onImageUpload={handleImageUpload} 
+                    onImageUpload={handleImageUpload}
+                    shouldFetch={false} 
                 />
                 <CustomInput 
                     value={groupName}
@@ -473,6 +474,3 @@ const styles = StyleSheet.create({
 });
 
 export default NewGroup;
-
-
-
