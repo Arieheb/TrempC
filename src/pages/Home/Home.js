@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, KeyboardAvoidingView, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import CustomRideItem from '../../components/RideItem/RideItem';
 import { db, auth, storage } from '../../../firebaseConfig';
@@ -13,19 +13,31 @@ const HomeScreen = () => {
     const [filteredRides, setFilteredRides] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const fetchRides = async () => {
         try {
             setLoading(true);
+            setErrorMessage('');
 
             const userId = auth.currentUser.uid;
             const userDoc = await getDoc(doc(db, 'users', userId));
             const groups = userDoc.data().groups || [];
+
+            if (!userDoc.data().hasOwnProperty('groups')) {
+                setErrorMessage('Create a group or join an existing group to view rides.');
+                setLoading(false);
+                return;
+            }
+
             const fetchedRides = new Set();
             let ridesList = [];
 
             const groupDocs = await Promise.all(groups.map(groupId => getDoc(doc(db, 'groups', groupId))));
-            const allParticipants = groupDocs.flatMap(groupDoc => groupDoc.data().participants || []);
+            const allParticipants = groupDocs.flatMap(groupDoc => {
+                return groupDoc.data().participants || [];
+            });
+
             const uniqueParticipants = [...new Set(allParticipants)].filter(participantId => participantId !== userId);
 
             const participantDocs = await Promise.all(uniqueParticipants.map(participantId => getDoc(doc(db, 'users', participantId))));
@@ -34,45 +46,58 @@ const HomeScreen = () => {
                 const data = doc.data();
                 participantMap.set(doc.id, {
                     email: data.email,
-                    fullName: `${data.firstName} ${data.lastName}`
+                    fullName: `${data.firstName} ${data.lastName}`,
+                    phoneNumber: data.phoneNumber 
                 });
             });
 
-            for (const participantId of uniqueParticipants) {
-                const ridesQuery = query(
-                    collection(db, 'rides'),
-                    where('userId', '==', participantId)
-                );
-                const ridesQuerySnapshot = await getDocs(ridesQuery);
+            for (const groupDoc of groupDocs) {
+                const groupData = groupDoc.data();
+                const groupImage = groupData.groupImage;
+                const groupImageUrl = await getDownloadURL(ref(storage, `groupPic/${groupImage}`));
 
-                const rideDataPromises = ridesQuerySnapshot.docs.map(async (rideDoc) => {
-                    if (!fetchedRides.has(rideDoc.id)) {
-                        let rideData = rideDoc.data();
-                        const participant = participantMap.get(rideData.userId);
-                        const profilePicUrl = await getDownloadURL(ref(storage, `profile/${participant.email}`));
-                        const rideDateTime = rideData.date_time.toDate();
-                        if (rideDateTime > new Date()) {
-                            rideData = {
-                                ...rideData,
-                                profilePicUrl,
-                                fullName: participant.fullName,
-                                fromLocation: rideData.source,
-                                toLocation: rideData.dest,
-                                date: rideDateTime.toLocaleDateString(),
-                                time: rideDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                                dateTime: rideDateTime, // Store Date object for sorting purposes
-                                cost: rideData.cost,
-                                vacantPlaces: rideData.places,
-                                comments: rideData.comment,
-                                userEmail: participant.email
-                            };
-                            fetchedRides.add(rideDoc.id);
-                            return rideData;
-                        }
+                const participantIds = groupData.participants || [];
+                
+                for (const participantId of participantIds) {
+                    if (participantId !== userId) {
+                        const ridesQuery = query(
+                            collection(db, 'rides'),
+                            where('userId', '==', participantId)
+                        );
+                        const ridesQuerySnapshot = await getDocs(ridesQuery);
+
+                        const rideDataPromises = ridesQuerySnapshot.docs.map(async (rideDoc) => {
+                            if (!fetchedRides.has(rideDoc.id)) {
+                                let rideData = rideDoc.data();
+                                const participant = participantMap.get(rideData.userId);
+                                const profilePicUrl = await getDownloadURL(ref(storage, `profile/${participant.email.toLowerCase()}`));
+                                const rideDateTime = rideData.date_time.toDate();
+                                if (rideDateTime > new Date()) {
+                                    rideData = {
+                                        ...rideData,
+                                        profilePicUrl,
+                                        fullName: participant.fullName,
+                                        phoneNumber: rideData.dPhone,
+                                        fromLocation: rideData.source,
+                                        toLocation: rideData.dest,
+                                        date: rideDateTime.toLocaleDateString(),
+                                        time: rideDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                        dateTime: rideDateTime,
+                                        cost: rideData.cost,
+                                        vacantPlaces: rideData.places,
+                                        comments: rideData.comment,
+                                        userEmail: participant.email,
+                                        groupImageUrl // Add the group image URL here
+                                    };
+                                    fetchedRides.add(rideDoc.id);
+                                    return rideData;
+                                }
+                            }
+                        });
+
+                        ridesList = ridesList.concat(await Promise.all(rideDataPromises));
                     }
-                });
-
-                ridesList = ridesList.concat(await Promise.all(rideDataPromises));
+                }
             }
 
             ridesList = ridesList.filter(ride => ride !== undefined);
@@ -84,6 +109,11 @@ const HomeScreen = () => {
 
             setRides(ridesList);
             setFilteredRides(ridesList);
+
+            if (ridesList.length === 0) {
+                setErrorMessage('No rides available in your groups.');
+            }
+
             setLoading(false);
         } catch (error) {
             console.error("Error fetching rides: ", error);
@@ -103,8 +133,15 @@ const HomeScreen = () => {
                 ride.toLocation.toLowerCase().includes(queryLowerCase)
             );
             setFilteredRides(filtered);
+
+            if (filtered.length === 0) {
+                setErrorMessage('No existing rides match your search.');
+            } else {
+                setErrorMessage('');
+            }
         } else {
             setFilteredRides(rides);
+            setErrorMessage('');
         }
     }, [searchQuery, rides]);
 
@@ -117,45 +154,49 @@ const HomeScreen = () => {
     };
 
     return (
-        <ScrollView>
-    <KeyboardAvoidingView style={styles.container}>
-        <View style={styles.searchContainer}>
-            <Icon name="search" size={20} color="grey" style={styles.searchIcon} />
-            <TextInput 
-                style={[styles.searchBar, { textAlign: searchQuery && /[\u0590-\u05FF]/.test(searchQuery[0]) ? 'right' : 'left' }]}
-                placeholder="Search rides"
-                placeholderTextColor="grey"
-                value={searchQuery}
-                onChangeText={handleSearch}
-            />
-            {searchQuery ? (
-                <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-                    <Icon name="times-circle" size={20} color="grey" style={styles.clearIcon} />
-                </TouchableOpacity>
-            ) : null}
-        </View>
-        {filteredRides.map((ride, index) => (
-            <CustomRideItem key={index} {...ride} />
-        ))}
-        {loading && <ActivityIndicator size="large" color="#0000ff" />}
-    </KeyboardAvoidingView>
-</ScrollView>
-
+        <ScrollView style={styles.scrollView}>
+            <KeyboardAvoidingView style={styles.container}>
+                <View style={styles.searchContainer}>
+                    <Icon name="search" size={20} color="grey" style={styles.searchIcon} />
+                    <TextInput 
+                        style={[styles.searchBar, { textAlign: searchQuery && /[\u0590-\u05FF]/.test(searchQuery[0]) ? 'right' : 'left' }]}
+                        placeholder="Search rides"
+                        placeholderTextColor="grey"
+                        value={searchQuery}
+                        onChangeText={handleSearch}
+                    />
+                    {searchQuery ? (
+                        <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                            <Icon name="times-circle" size={20} color="grey" style={styles.clearIcon} />
+                        </TouchableOpacity>
+                    ) : null}
+                </View>
+                {errorMessage ? (
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                ) : (
+                    filteredRides.map((ride, index) => (
+                        <CustomRideItem key={index} {...ride} />
+                    ))
+                )}
+                {loading && <ActivityIndicator size="large" color="#0000ff" />}
+            </KeyboardAvoidingView>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    scrollView: {
+        backgroundColor: '#fff',
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
         paddingBottom: 20,
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        // marginBottom: 20,
         position: 'relative',
         paddingVertical: 8,
         width: '95%',
@@ -171,10 +212,9 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 5,
-        paddingLeft: 40, // to make room for the search icon
-        paddingRight: 40, // to make room for the clear icon
+        paddingLeft: 40,
+        paddingRight: 40,
     },
-    
     clearButton: {
         position: 'absolute',
         right: 5, 
@@ -183,6 +223,13 @@ const styles = StyleSheet.create({
     },
     clearIcon: {
         marginRight: 10,
+    },
+    errorText: {
+        color: 'grey',
+        fontSize: 18,
+        textAlign: 'center',
+        marginVertical: 20,
+        width: '90%',
     },
 });
 
