@@ -1,28 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Alert, ScrollView, Text } from 'react-native';
 import { CommonActions, useNavigation } from '@react-navigation/native';
-import { db, auth } from '../../../firebaseConfig';
+import { db, auth, storage } from '../../../firebaseConfig';
 import { updateEmail, updatePassword } from "firebase/auth";
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import UploadPhoto from '../../components/UploadImage/UploadImage';
 import ProfileImage from '../../../assets/images/profile.png'; // Import the local image
-
-const signOutNow = (navigation) => {
-    auth.signOut().then(() => {
-        navigation.dispatch(CommonActions.reset({
-            index: 0,
-            routes: [
-                { name: 'loginScreen' }
-            ],
-        })
-        )
-    }).catch((error) => {
-        Alert.alert("Error signing out:", error.message);
-    });
-}
+import { useUser } from '../../../UserContext'; // Import the user context
 
 const Profile = () => {
     const [email, setEmail] = useState('');
@@ -32,9 +20,11 @@ const Profile = () => {
     const [phone, setPhone] = useState('');
     const [initialData, setInitialData] = useState({});
     const [image, setImage] = useState(ProfileImage); // Use local image as default
+    const [tempImageUri, setTempImageUri] = useState(null);
     const navigation = useNavigation();
     const hasFetchedData = useRef(false);
     const { showActionSheetWithOptions } = useActionSheet();
+    const { userProfile, setUserProfile } = useUser(); // Use the user context
 
     const userDoc = doc(db, "users", auth.currentUser.uid);
     const user = auth.currentUser;
@@ -48,7 +38,10 @@ const Profile = () => {
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
                         setInitialData(userData);
+                        setFirstName(userData.firstName || '');
+                        setLastName(userData.lastName || '');
                         setEmail(userData.email || '');
+                        setPhone(userData.phone || '');
                         hasFetchedData.current = true;
                     }
                 } catch (error) {
@@ -60,33 +53,28 @@ const Profile = () => {
     }, [user]);
 
     const saveDataPress = async () => {
-        const userUpdates = {};
-        if (firstName.trim()) {
-            userUpdates.firstName = firstName;
+        if (!tempImageUri &&
+            email === initialData.email &&
+            firstName === initialData.firstName &&
+            lastName === initialData.lastName &&
+            phone === initialData.phone &&
+            !password.trim()) {
+            Alert.alert('No changes to be saved.');
+            return;
         }
-        if (lastName.trim()) {
-            userUpdates.lastName = lastName;
-        }
-        if (phone.trim()) {
-            userUpdates.phone = phone;
+
+        const userUpdates = {
+            firstName: firstName || initialData.firstName,
+            lastName: lastName || initialData.lastName,
+            phone: phone || initialData.phone,
+        };
+
+        if (email !== initialData.email) {
+            userUpdates.email = email;
         }
 
         if (Object.keys(userUpdates).length > 0) {
             await setDoc(userDoc, userUpdates, { merge: true });
-        } else {
-            if (email === initialData.email && !password.trim()) {
-                Alert.alert("No changes made.");
-                return;
-            }
-        }
-
-        if (email.trim() && email !== initialData.email) {
-            try {
-                await updateEmail(auth.currentUser, email);
-                await setDoc(userDoc, { email: email }, { merge: true });
-            } catch (error) {
-                Alert.alert("Error updating email:", error.message);
-            }
         }
 
         if (password.trim()) {
@@ -97,6 +85,16 @@ const Profile = () => {
             }
         }
 
+        if (tempImageUri) {
+            await uploadProfileImage(tempImageUri);
+        }
+
+        // Update the context with the new profile information
+        setUserProfile((prevState) => ({
+            ...prevState,
+            fullName: `${userUpdates.firstName} ${userUpdates.lastName}`,
+        }));
+
         Alert.alert("Changes saved successfully!");
         navigation.dispatch(CommonActions.reset({
             index: 0,
@@ -104,6 +102,26 @@ const Profile = () => {
                 { name: 'homeScreen' }
             ],
         }));
+    };
+
+    const uploadProfileImage = async (uri) => {
+        try {
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const storageRef = ref(storage, `profile/${email.toLowerCase()}`);
+            const uploadTask = uploadBytesResumable(storageRef, blob);
+
+            await uploadTask;
+
+            const url = await getDownloadURL(storageRef);
+            setImage({ uri: url });
+            setUserProfile((prevState) => ({
+                ...prevState,
+                profilePicture: url,
+            }));
+        } catch (error) {
+            Alert.alert('Error uploading profile image:', error.message);
+        }
     };
 
     const returnPress = () => {
@@ -126,62 +144,82 @@ const Profile = () => {
                 },
                 {
                     text: "Yes",
-                    onPress: () => signOutNow(navigation)
+                    onPress: () => {
+                        auth.signOut().then(() => {
+                            navigation.dispatch(CommonActions.reset({
+                                index: 0,
+                                routes: [
+                                    { name: 'loginScreen' }
+                                ],
+                            }));
+                        }).catch((error) => {
+                            Alert.alert("Error signing out:", error.message);
+                        });
+                    }
                 }
             ]
         );
     };
 
+    const handleImageUpload = (imageUri) => {
+        setTempImageUri(imageUri);
+        setImage({ uri: imageUri });
+    };
+
     return (
         <ScrollView>
             <View style={styles.container}>
-                <View style = {{marginVertical: 15}}>
-                <UploadPhoto 
-                    storagePath="profile"
-                    imageName={email.toLowerCase()} 
-                    defaultImage={ProfileImage} // Pass the local image as default
-                />    
+                <View style={{ marginVertical: 15 }}>
+                    {email ? (
+                        <UploadPhoto
+                            storagePath="profile"
+                            imageName={email.toLowerCase()}
+                            defaultImage={ProfileImage} // Pass the local image as default
+                            onImageUpload={handleImageUpload} // Handle image upload
+                        />
+                    ) : (
+                        <Text>Loading...</Text>
+                    )}
                 </View>
-                
-                
-                <CustomInput 
-                    placeholder={initialData.firstName || "First Name"} 
-                    setValue={setFirstName} 
+
+                <CustomInput
+                    placeholder={initialData.firstName || "First Name"}
+                    setValue={setFirstName}
                 />
-                
-                <CustomInput 
-                    placeholder={initialData.lastName || "Last Name"} 
-                    setValue={setLastName} 
+
+                <CustomInput
+                    placeholder={initialData.lastName || "Last Name"}
+                    setValue={setLastName}
                 />
-                
-                <CustomInput 
-                    placeholder={initialData.phone || "Phone"} 
-                    setValue={setPhone} 
+
+                <CustomInput
+                    placeholder={initialData.phone || "Phone"}
+                    setValue={setPhone}
                 />
-                
-                <CustomInput 
-                    placeholder="Password" 
-                    secureTextEntry={true} 
-                    setValue={setPassword} 
+
+                <CustomInput
+                    placeholder="Password"
+                    secureTextEntry={true}
+                    setValue={setPassword}
                 />
-                
-                <CustomButton 
-                    text="Save Changes" 
-                    onPress={saveDataPress} 
-                    bgColor={'green'} 
+
+                <CustomButton
+                    text="Save Changes"
+                    onPress={saveDataPress}
+                    bgColor={'green'}
                 />
-                
-                <CustomButton 
-                    text="Cancel" 
-                    onPress={returnPress} 
-                    bgColor={'red'} 
+
+                <CustomButton
+                    text="Cancel"
+                    onPress={returnPress}
+                    bgColor={'red'}
                 />
-                
-                <CustomButton 
-                    text="Sign Out" 
-                    onPress={handleSignOut} 
-                    bgColor={'lightgrey'} 
-                    fgColor={'black'} 
+
+                <CustomButton
+                    text="Sign Out"
+                    onPress={handleSignOut}
+                    bgColor={'lightgrey'}
+                    fgColor={'black'}
                 />
             </View>
         </ScrollView>
