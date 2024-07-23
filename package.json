@@ -50,7 +50,8 @@
     "react-native-screens": "3.31.1",
     "react-native-vector-icons": "^10.1.0",
     "react-native-whatsapp-stickers": "^2.0.3",
-    "upgrade": "^1.1.0"
+    "upgrade": "^1.1.0",
+    "expo-asset": "~10.0.10"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0"
