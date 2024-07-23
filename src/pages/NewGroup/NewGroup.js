@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, FlatList, TouchableOpacity, TextInput, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Alert, FlatList, TouchableOpacity, TextInput, Modal, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Contacts from 'expo-contacts';
 import { auth, db, storage } from '../../../firebaseConfig';
-import { addDoc, collection, doc, updateDoc, arrayUnion  } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { CommonActions } from '@react-navigation/native';
 import CustomInput from '../../components/CustomInput';
@@ -35,7 +35,7 @@ const NewGroup = () => {
             Alert.alert('Error', 'Group Name is required');
             return;
         }
-    
+
         const groupData = {
             groupName: groupName,
             desc: groupDescription,
@@ -43,35 +43,45 @@ const NewGroup = () => {
             participants: [uId], // Initialize with current user
             groupImage: '', // Placeholder for group image ID
         };
-    
+
         try {
             const groupRef = await addDoc(collection(db, 'groups'), groupData);
-    
-            // Upload the image after the group is created
-            if (tempImageUri) {
+
+            // Use the communLogo if no image is uploaded
+            if (!tempImageUri) {
+                const response = await fetch(Image.resolveAssetSource(communLogo).uri);
+                const blob = await response.blob();
+                const storageRef = ref(storage, `groupPic/${groupRef.id}`);
+                const uploadTask = uploadBytesResumable(storageRef, blob, { contentType: 'image/jpeg' });
+                await uploadTask;
+
+                // Update the group document with the image storage reference ID
+                await updateDoc(doc(db, 'groups', groupRef.id), { groupImage: groupRef.id });
+            } else {
+                // Upload the image after the group is created
                 await uploadGroupImage(tempImageUri, groupRef.id);
             }
-    
+
             // Update the group image field with the group ID
             await updateDoc(groupRef, { groupImage: groupRef.id });
-    
+
             // Fetch all users from the database
             const usersSnapshot = await getDocs(collection(db, 'users'));
             const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    
+
             const normalizePhoneNumber = (phone) => {
                 return phone.replace(/[-\s]/g, '').replace(/^(\+972|0)/, '+972');
             };
-    
+
             const selectedContactDetails = selectedContacts.map(contactId => {
                 const contact = contacts.find(c => c.id === contactId);
                 const contactPhone = contact.phoneNumbers[0].number;
                 return { id: contactId, phone: normalizePhoneNumber(contactPhone) };
             });
-    
+
             const matchedUids = [];
             const unmatchedContacts = [];
-    
+
             selectedContactDetails.forEach(contact => {
                 const matchedUser = users.find(user => {
                     const userPhone = user.phone ? normalizePhoneNumber(user.phone) : '';
@@ -83,24 +93,16 @@ const NewGroup = () => {
                     unmatchedContacts.push(contact.id);
                 }
             });
-    
+
             // Update the participants field with matched UIDs
             await updateDoc(groupRef, { participants: arrayUnion(...matchedUids) });
-    
-            /////////// Log unmatched contacts  //////////
-            // if (unmatchedContacts.length > 0) {
-            //     unmatchedContacts.forEach(contactId => {
-            //         const contact = contacts.find(c => c.id === contactId);
-            //         console.log('Unmatched Contact:', getContactName(contact));
-            //     });
-            // }
-    
+
             // Update user's groups field
             const userDocRef = doc(db, 'users', uId);
             await updateDoc(userDocRef, {
                 groups: arrayUnion(groupRef.id)
             });
-    
+
             // Update all other matched users' groups field
             const updateParticipantsPromises = matchedUids.map(async (participantUid) => {
                 const participantDocRef = doc(db, 'users', participantUid);
@@ -109,7 +111,7 @@ const NewGroup = () => {
                 });
             });
             await Promise.all(updateParticipantsPromises);
-    
+
             Alert.alert('Success', 'Group created successfully');
             navigation.dispatch(CommonActions.reset({
                 index: 0,
@@ -124,19 +126,17 @@ const NewGroup = () => {
         try {
             const response = await fetch(uri);
             const blob = await response.blob();
-            const storageRef = ref(storage, `groupPic/${groupId}`);
-            const uploadTask = uploadBytesResumable(storageRef, blob);
-    
+            const storageRef = ref(storage, `groupPic/${groupId}.jpg`);
+            const uploadTask = uploadBytesResumable(storageRef, blob, { contentType: 'image/jpeg' });
+
             await uploadTask;
-    
-            // Update group document with the image ID
-            const url = await getDownloadURL(storageRef);
-            await updateDoc(doc(db, 'groups', groupId), { groupImage: url });
+
+            // Update group document with the image storage reference ID
+            await updateDoc(doc(db, 'groups', groupId), { groupImage: groupId });
         } catch (error) {
             console.log('Error uploading group image:', error);
         }
     };
-    
 
     const cancelPress = () => {
         navigation.dispatch(CommonActions.reset({
@@ -166,16 +166,16 @@ const NewGroup = () => {
         if (data.length > 0) {
             // Filter out contacts without a phone number
             const contactsWithPhoneNumbers = data.filter(contact => contact.phoneNumbers && contact.phoneNumbers.length > 0);
-    
+
             // Sorting contacts A-Z for English names and א-ת for Hebrew names
             const sortedData = contactsWithPhoneNumbers.sort((a, b) => {
                 const nameA = getContactName(a).toLowerCase();
                 const nameB = getContactName(b).toLowerCase();
-                
+
                 // Check if the names are in Hebrew
                 const isHebrewA = /[\u0590-\u05FF]/.test(nameA);
                 const isHebrewB = /[\u0590-\u05FF]/.test(nameB);
-    
+
                 if (isHebrewA && isHebrewB) {
                     // Both names are Hebrew
                     return nameA.localeCompare(nameB, 'he');
@@ -187,7 +187,7 @@ const NewGroup = () => {
                     return isHebrewA ? 1 : -1;
                 }
             });
-    
+
             setContacts(sortedData);
             setFilteredContacts(sortedData);
         }
@@ -213,7 +213,7 @@ const NewGroup = () => {
             setFilteredContacts(contacts);
         }
     };
-    
+
     const handleConfirm = () => {
         setSelectedContacts(tempSelectedContacts);
         setModalVisible(false);
@@ -229,19 +229,19 @@ const NewGroup = () => {
     };
 
     const getContactName = (contact) => {
-        if (contact.name) 
+        if (contact.name)
             return contact.name;
-        if (contact.firstName && contact.middleName && contact.lastName) 
+        if (contact.firstName && contact.middleName && contact.lastName)
             return `${contact.firstName} ${contact.middleName} ${contact.lastName}`;
-        if (contact.firstName && contact.lastName) 
+        if (contact.firstName && contact.lastName)
             return `${contact.firstName} ${contact.lastName}`;
-        if (contact.firstName) 
+        if (contact.firstName)
             return contact.firstName;
-        if (contact.lastName) 
+        if (contact.lastName)
             return contact.lastName;
         return 'No Name';
     };
-    
+
     const removeContact = (contactId) => {
         setSelectedContacts(selectedContacts.filter(id => id !== contactId));
     };
@@ -249,27 +249,27 @@ const NewGroup = () => {
     return (
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <View style={styles.container}>
-                <UploadPhoto 
-                    storagePath="groupPic" 
-                    imageName={groupName} 
-                    defaultImage={communLogo} 
+                <UploadPhoto
+                    storagePath="groupPic"
+                    imageName={groupName}
+                    defaultImage={communLogo}
                     onImageUpload={handleImageUpload}
-                    shouldFetch={false} 
+                    shouldFetch={false}
                 />
-                <CustomInput 
+                <CustomInput
                     value={groupName}
                     setValue={setGroupName}
                     placeholder="Enter group name"
                 />
-                <CustomInput 
+                <CustomInput
                     value={groupDescription}
                     setValue={setGroupDescription}
-                    placeholder="Enter group description" 
+                    placeholder="Enter group description"
                 />
-                <CustomButton 
+                <CustomButton
                     text="Select Contacts"
-                    title="Select Contacts" 
-                    onPress={requestContactsPermission} 
+                    title="Select Contacts"
+                    onPress={requestContactsPermission}
                 />
                 {selectedContacts.length > 0 && (
                     <View style={styles.contactsTable}>
@@ -291,17 +291,16 @@ const NewGroup = () => {
                         })}
                     </View>
                 )}
-                <CustomButton 
+                <CustomButton
                     text="Save"
-                    title="Save" 
-                    onPress={handleSave} 
+                    title="Save"
+                    onPress={handleSave}
                 />
-                <CustomButton 
+                <CustomButton
                     text="Cancel"
-                    title="Cancel" 
+                    title="Cancel"
                     onPress={cancelPress}
-                    type = "PRIMARY"
-                    
+                    type="PRIMARY"
                 />
                 <Modal
                     visible={modalVisible}
@@ -313,7 +312,7 @@ const NewGroup = () => {
                         <View style={styles.modalContainer}>
                             <View style={styles.searchContainer}>
                                 <Icon name="search" size={20} color="grey" style={styles.searchIcon} />
-                                <TextInput 
+                                <TextInput
                                     style={[styles.searchBar, { textAlign: searchQuery && /[\u0590-\u05FF]/.test(searchQuery[0]) ? 'right' : 'left' }]}
                                     placeholder="Search contacts"
                                     placeholderTextColor="grey"
@@ -334,8 +333,8 @@ const NewGroup = () => {
                                     const contactPhone = item.phoneNumbers && item.phoneNumbers.length > 0 ? item.phoneNumbers[0].number : 'No phone number';
                                     const isSelected = tempSelectedContacts.includes(item.id);
                                     return (
-                                        <TouchableOpacity 
-                                            style={[styles.contactItem, isSelected ? styles.selected : null]} 
+                                        <TouchableOpacity
+                                            style={[styles.contactItem, isSelected ? styles.selected : null]}
                                             onPress={() => toggleContactSelection(item.id)}
                                         >
                                             <Text style={styles.contactName}>
@@ -470,7 +469,7 @@ const styles = StyleSheet.create({
     cancelButton: {
         backgroundColor: 'red',
     },
-    
+
 });
 
 export default NewGroup;
