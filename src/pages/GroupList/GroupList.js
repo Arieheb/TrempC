@@ -364,13 +364,16 @@ const GroupList = () => {
             <View>
                 <View style={styles.tableRow}>
                     <View style={styles.profileAndName}>
-                        {item.profilePictureUrl ? (
+
+                    {/* getting the profile picture of the group */}
+                     
+                        {/* {item.profilePictureUrl ? (
                             <Image source={{ uri: item.profilePictureUrl }} style={styles.profilePicture} />
                         ) : (
                             <View style={styles.profilePicturePlaceholder}>
                                 <Icon name="group" size={25} color="#ccc" />
                             </View>
-                        )}
+                        )} */}
                         <Text style={styles.groupName}>{item.groupName}</Text>
                     </View>
                     <View style={styles.icons}>
