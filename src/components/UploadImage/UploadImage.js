@@ -2,16 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Image, View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import Profile from '../../../assets/images/profile.png';
-import communLogo from '../../../assets/images/communLogo.jpg';
-import { auth, storage } from '../../../firebaseConfig';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../../firebaseConfig';
+import { ref, getDownloadURL } from 'firebase/storage';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 
 const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shouldFetch = true }) => {
-    const user = auth.currentUser;
-    const userEmail = user?.email || '';
-
     const [image, setImage] = useState(null);
     const { showActionSheetWithOptions } = useActionSheet();
 
@@ -19,17 +14,16 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shou
         if (shouldFetch) {
             const fetchProfilePicture = async () => {
                 try {
-                    const name = storagePath === 'profile' ? userEmail : imageName;
-                    const url = await getDownloadURL(ref(storage, `${storagePath}/${name}`));
+                    const url = await getDownloadURL(ref(storage, `${storagePath}/${imageName.toLowerCase()}`));
                     setImage(url);
                 } catch (error) {
-                    console.log('Error downloading image:', error);
+                    Alert.alert('Error', 'Failed to download image.');
                 }
             };
 
             fetchProfilePicture();
         }
-    }, [shouldFetch, storagePath, userEmail, imageName]);
+    }, [shouldFetch, storagePath, imageName]);
 
     const showActionSheet = () => {
         const options = ['Upload from Gallery', 'Take a Picture', 'Cancel'];
@@ -59,17 +53,12 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shou
                 quality: 1,
             });
 
-            if (!result.cancelled && result.assets && result.assets.length > 0) {
+            if (!result.canceled && result.assets && result.assets.length > 0) {
                 const { uri } = result.assets[0];
-                const name = storagePath === 'profile' ? userEmail : imageName;
-
                 setImage(uri);
                 onImageUpload && onImageUpload(uri);
-
-                await uploadImage(uri, name);
             }
         } catch (error) {
-            console.log('Error uploading image:', error);
             Alert.alert('Error', 'Failed to upload picture.');
         }
     };
@@ -89,35 +78,13 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shou
                 quality: 1,
             });
 
-            if (!result.cancelled && result.assets && result.assets.length > 0) {
+            if (!result.canceled && result.assets && result.assets.length > 0) {
                 const { uri } = result.assets[0];
-                const name = storagePath === 'profile' ? userEmail : imageName;
-
                 setImage(uri);
                 onImageUpload && onImageUpload(uri);
-
-                await uploadImage(uri, name);
             }
         } catch (error) {
-            console.log('Error taking photo:', error);
             Alert.alert('Error', 'Failed to take photo.');
-        }
-    };
-
-    const uploadImage = async (uri, name) => {
-        try {
-            const response = await fetch(uri);
-            const blob = await response.blob();
-            const storageRef = ref(storage, `${storagePath}/${name}`);
-            const uploadTask = uploadBytesResumable(storageRef, blob);
-
-            await uploadTask;
-
-            const url = await getDownloadURL(storageRef);
-            setImage(url);
-        } catch (error) {
-            console.log('Error uploading image:', error);
-            throw error;
         }
     };
 
