@@ -9,8 +9,7 @@ import logo from './assets/images/logo.png';
 import { auth, bd, storage } from './firebaseConfig';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import CustomDrawerContent from './Drawer';
-import newRidePage from './src/pages/NewRide/NewRide.js';
-
+import { UserProvider } from './UserContext.js';
 //// page imports ////
 import homePage from './src/pages/Home/Home.js';
 import loginPage from './src/pages/Login/Login.js';
@@ -21,6 +20,7 @@ import newPasswordPage from './src/pages/NewPassword/NewPassword.js';
 import profilePage from './src/pages/Profile/Profile.js';
 import newGroupsPage from './src/pages/NewGroup/NewGroup.js';
 import gListPage from './src/pages/GroupList/GroupList.js';
+import newRidePage from './src/pages/NewRide/NewRide.js';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -74,17 +74,19 @@ export default function App() {
   }
 
   return (
-    <ActionSheetProvider>
-      <NavigationContainer>
-        <Stack.Navigator>
-          {user ? (
-            <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
-          ) : (
-            <Stack.Screen name="Auth" component={AuthStack} options={{ headerShown: false }} />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </ActionSheetProvider>
+    <UserProvider>
+      <ActionSheetProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            {user ? (
+              <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
+            ) : (
+              <Stack.Screen name="Auth" component={AuthStack} options={{ headerShown: false }} />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ActionSheetProvider>
+    </UserProvider>
   );
 }
 
