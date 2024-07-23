@@ -115,7 +115,7 @@ const GroupList = () => {
                             await updateDoc(userDocRef, {
                                 groups: arrayRemove(group.id)
                             });
-
+    
                             if (group.participants.length === 1) {
                                 // Delete group and associated data
                                 await deleteDoc(doc(db, 'groups', group.id));
@@ -128,8 +128,9 @@ const GroupList = () => {
                                     participants: arrayRemove(user.uid)
                                 });
                             }
-
-                            setGroups(groups.filter(g => g.id !== group.id));
+    
+                            // Update the state to remove the deleted group
+                            setGroups(prevGroups => prevGroups.filter(g => g.id !== group.id));
                             Alert.alert('Success', 'Group deleted successfully');
                         } catch (error) {
                             Alert.alert('Error', 'Failed to delete group', error);
@@ -139,6 +140,7 @@ const GroupList = () => {
             ]
         );
     };
+    
 
     const getUserDetails = async (userId) => {
         try {
