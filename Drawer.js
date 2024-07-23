@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { auth, db, storage } from './firebaseConfig';
 import { getDownloadURL, ref } from 'firebase/storage';
@@ -85,7 +85,7 @@ export default function CustomDrawerContent({ navigation, ...props }) {
           {profilePicture && <Image source={typeof profilePicture === 'string' ? { uri: profilePicture } : profilePicture} style={styles.profilePicture} />}
           <Text style={styles.fullName}>{fullName}</Text>
         </TouchableOpacity>
-        
+
         {drawerItems.map((item, index) => (
           <CustomDrawerItem
             key={index}
@@ -97,7 +97,9 @@ export default function CustomDrawerContent({ navigation, ...props }) {
       </DrawerContentScrollView>
       <View style={styles.footer}>
         <Ionicons name="exit-outline" size={24} color="black" style={styles.icon} />
-        <Button title="Sign Out" onPress={handleSignOut} color="black" />
+        <TouchableOpacity onPress={handleSignOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -155,5 +157,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
     marginLeft: 10,
+  },
+  signOutText: {
+    fontSize: 18,
+    color: 'black',
   },
 });
