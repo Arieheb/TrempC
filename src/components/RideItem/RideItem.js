@@ -91,7 +91,11 @@ const handleCall = () => {
         <View style={styles.container}>
             <View style={styles.headerRow}>
                 <View style={styles.infoText}>
-                    <Text style={[styles.rowText, { fontWeight: 'bold', fontSize: 16, paddingBottom: 5 }]}>{fullName} has offered a ride!</Text>
+                    <View style = {{flexDirection: 'row'}}> 
+                        <Text style={[styles.rowText, { fontWeight: 'bold', fontSize: 16}]}>{fullName}</Text>
+                        <Text style = {[styles.rowText, { fontWeight: 'bold', fontSize: 16}]}> has offered a ride!</Text>
+
+                    </View>
                     <Text style={styles.rowText}>
                         <Text style={styles.boldText}>From: </Text>
                         {fromLocation}
