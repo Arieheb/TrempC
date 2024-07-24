@@ -53,6 +53,18 @@ const Profile = () => {
     }, [user]);
 
     const saveDataPress = async () => {
+        const namePattern = /^[A-Za-z]+$/;
+
+        if (!firstName.match(namePattern)) {
+            Alert.alert('Error', 'First name should only contain English characters');
+            return;
+        }
+
+        if (!lastName.match(namePattern)) {
+            Alert.alert('Error', 'Last name should only contain English characters');
+            return;
+        }
+
         if (!tempImageUri &&
             email === initialData.email &&
             firstName === initialData.firstName &&
@@ -166,8 +178,26 @@ const Profile = () => {
         setImage({ uri: imageUri });
     };
 
+    const handleFirstNameChange = (value) => {
+        const namePattern = /^[A-Za-z\s]*$/;
+        if (value.match(namePattern) || value === '') {
+            setFirstName(value);
+        } else {
+            Alert.alert('Error', 'First name should only contain English letters and spaces');
+        }
+    };
+
+    const handleLastNameChange = (value) => {
+        const namePattern = /^[A-Za-z\s]*$/;
+        if (value.match(namePattern) || value === '') {
+            setLastName(value);
+        } else {
+            Alert.alert('Error', 'Last name should only contain English letters and spaces');
+        }
+    };
+
     return (
-        <ScrollView>
+        <ScrollView style={styles.scrollViewContainer}>
             <View style={styles.container}>
                 <View style={{ marginVertical: 15 }}>
                     {email ? (
@@ -184,12 +214,12 @@ const Profile = () => {
 
                 <CustomInput
                     placeholder={initialData.firstName || "First Name"}
-                    setValue={setFirstName}
+                    setValue={handleFirstNameChange}
                 />
 
                 <CustomInput
                     placeholder={initialData.lastName || "Last Name"}
-                    setValue={setLastName}
+                    setValue={handleLastNameChange}
                 />
 
                 <CustomInput
@@ -198,8 +228,9 @@ const Profile = () => {
                 />
 
                 <CustomInput
-                    placeholder="Password"
+                    placeholder={initialData.password || "Password"}
                     secureTextEntry={true}
+                    value={password}
                     setValue={setPassword}
                 />
 
@@ -227,12 +258,17 @@ const Profile = () => {
 }
 
 const styles = StyleSheet.create({
+    scrollViewContainer: {
+        flexGrow: 1,
+        backgroundColor: 'white',
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
-        paddingHorizontal: 10
+        backgroundColor: 'white',
+        paddingHorizontal: 10,
+        paddingBottom: 20, 
     },
     input: {
         height: 40,
