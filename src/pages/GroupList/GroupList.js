@@ -8,6 +8,7 @@ import { ref, deleteObject } from 'firebase/storage';
 import * as Contacts from 'expo-contacts';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+
 const GroupList = () => {
     const [groups, setGroups] = useState([]);
     const [expandedGroups, setExpandedGroups] = useState([]);
@@ -44,7 +45,6 @@ const GroupList = () => {
             }));
             const adminParticipants = groupData.groupAdmins || [];
     
-            // Sort participants: current user first, then admins, then others
             participants.sort((a, b) => {
                 if (a.id === user.uid) return -1;
                 if (b.id === user.uid) return 1;
@@ -57,7 +57,6 @@ const GroupList = () => {
     
             groupData.participantsDetails = participants;
     
-            // Fetch group profile picture URL
             if (groupData.groupImage) {
                 try {
                     const imageRef = ref(storage, `groupPic/${groupData.groupImage}`);
@@ -76,8 +75,6 @@ const GroupList = () => {
         setGroups(groupsList);
         setGroupsLoading(false);
     };
-    
-    
     
 
     const preFetchContacts = async () => {
@@ -117,19 +114,16 @@ const GroupList = () => {
                             });
     
                             if (group.participants.length === 1) {
-                                // Delete group and associated data
                                 await deleteDoc(doc(db, 'groups', group.id));
                                 const storageRef = ref(storage, `groupPic/${group.id}`);
                                 await deleteObject(storageRef);
                             } else {
-                                // Remove user from group participants
                                 const groupDocRef = doc(db, 'groups', group.id);
                                 await updateDoc(groupDocRef, {
                                     participants: arrayRemove(user.uid)
                                 });
                             }
     
-                            // Update the state to remove the deleted group
                             setGroups(prevGroups => prevGroups.filter(g => g.id !== group.id));
                             Alert.alert('Success', 'Group deleted successfully');
                         } catch (error) {
@@ -156,7 +150,7 @@ const GroupList = () => {
             }
         } catch (error) {
         }
-        return { fullName: 'Unknown', phoneNumber: 'Unknown' }; // Fallback in case of an error
+        return { fullName: 'Unknown', phoneNumber: 'Unknown' };
     };
 
     const handleAddParticipants = (group) => {
@@ -321,6 +315,12 @@ const GroupList = () => {
             participants: arrayRemove(userId),
             groupAdmins: arrayRemove(userId)
         });
+
+        const userDocRef = doc(db, 'users', userId);
+        await updateDoc(userDocRef, {
+            groups: arrayRemove(groupId)
+        });
+
         fetchGroups();
     };
 
@@ -366,9 +366,6 @@ const GroupList = () => {
             <View>
                 <View style={styles.tableRow}>
                     <View style={styles.profileAndName}>
-
-                    {/* getting the profile picture of the group */}
-                     
                         {/* {item.profilePictureUrl ? (
                             <Image source={{ uri: item.profilePictureUrl }} style={styles.profilePicture} />
                         ) : (
@@ -394,6 +391,9 @@ const GroupList = () => {
                 </View>
                 {expandedGroups.includes(item.id) && (
                     <View style={styles.participantsList}>
+                        {item.desc && (
+                            <Text style={styles.groupDescription}>{item.desc}</Text>
+                        )}
                         {item.participantsDetails?.map((participant, idx) => (
                             <View
                                 key={participant.id}
@@ -430,7 +430,6 @@ const GroupList = () => {
             </View>
         );
     };
-    
 
     return (
         <View style={styles.container}>
@@ -438,11 +437,15 @@ const GroupList = () => {
             {groupsLoading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
             ) : (
-                <FlatList
-                    data={groups}
-                    renderItem={({ item }) => <GroupItem item={item} />}
-                    keyExtractor={(item) => item.id}
-                />
+                groups.length === 0 ? (
+                    <Text style={styles.noGroupsText}>{'You are not part of any groups.\n Create a new group or get added to existing group'}</Text>
+                ) : (
+                    <FlatList
+                        data={groups}
+                        renderItem={({ item }) => <GroupItem item={item} />}
+                        keyExtractor={(item) => item.id}
+                    />
+                )
             )}
 
             <Modal
@@ -508,6 +511,7 @@ const GroupList = () => {
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -519,6 +523,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 16,
         textAlign: 'center',
+    },
+    noGroupsText: {
+        fontSize: 18,
+        textAlign: 'center',
+        marginTop: 20,
+        color: 'grey',
+        alignSelf: 'center',
+        width: '85%',
     },
     tableRow: {
         flexDirection: 'row',
@@ -557,6 +569,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
         paddingLeft: 10,
+    },
+    groupDescription: {
+        fontStyle: 'italic',
+        color: 'grey',
+        paddingLeft: 10,
+        paddingBottom: 5,
     },
     icons: {
         flexDirection: 'row',
@@ -670,6 +688,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
-
 
 export default GroupList;
