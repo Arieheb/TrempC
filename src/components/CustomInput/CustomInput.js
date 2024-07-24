@@ -1,8 +1,7 @@
 import React from 'react';
-import { View,StyleSheet, Text, TextInput } from 'react-native';
-import { keyboardType } from 'react-native';
+import { View, StyleSheet, TextInput } from 'react-native';
 
-const CustomInput = ({value, setValue, placeholder,secureTextEntry }) => {
+const CustomInput = ({ value, setValue, placeholder, secureTextEntry, keyboardType }) => {
     return (
         <View style={styles.container}>
             <TextInput 
@@ -25,12 +24,10 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 10,
         marginVertical: 7,
-        
     },
-    input:{
+    input: {
         padding: 8,
     }
-
-})
+});
 
 export default CustomInput;
