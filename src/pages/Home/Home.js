@@ -25,7 +25,7 @@ const HomeScreen = () => {
             const groups = userDoc.data().groups || [];
 
             if (!userDoc.data().hasOwnProperty('groups')) {
-                setErrorMessage('Create a group or join an existing group to view rides.');
+                setErrorMessage('Create a group or join an existing group to view and share rides.');
                 setLoading(false);
                 return;
             }
