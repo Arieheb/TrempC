@@ -242,13 +242,15 @@ const NewRide = () => {
                     title="Save"
                     onPress={handleSave}
                     text="Save"
+                    bgColor={'green'}
+
                 />
 
                 <CustomButton
                     title="Return"
                     onPress={returnPress}
                     text="Cancel"
-                    type="SECONDARY"
+                    bgColor={'red'}
                 />
             </KeyboardAvoidingView>
         </KeyboardAvoidingView>
