@@ -295,6 +295,7 @@ const NewGroup = () => {
     return (
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <View style={styles.container}>
+                <Text style={styles.title}>New Group</Text>
                 <UploadPhoto
                     storagePath="groupPic"
                     imageName={groupName}
@@ -424,6 +425,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingTop: 20,
         backgroundColor: '#fff',
+    },
+    title: {
+        fontSize: 30,
+        fontWeight: 'bold',
+        margin: 10,
+        textAlign: 'center',
     },
     modalOverlay: {
         flex: 1,

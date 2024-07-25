@@ -110,7 +110,7 @@ const NewRide = () => {
     };
 
     return (
-        <KeyboardAvoidingView>
+        <KeyboardAvoidingView style = {styles.container}>
             <Text style={styles.title}>New Ride</Text>
 
             <KeyboardAvoidingView style={styles.addressRow}>
@@ -261,6 +261,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
+        backgroundColor: 'white',
     },
     timeRow: {
         flexDirection: 'row',
