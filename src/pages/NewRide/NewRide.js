@@ -214,11 +214,11 @@ const NewRide = () => {
             <KeyboardAvoidingView style={{ alignItems: 'center' }}>
                 <CustomInput
                     setValue={setDriverName}
-                    placeholder={driverName ? driverName : 'Driver Name'}
+                    placeholder={driverName ? driverName + " (Default)": 'Driver Name '}
                 />
                 <CustomInput
                     setValue={setDPhone}
-                    placeholder={dPhone ? dPhone : 'Phone Number'}
+                    placeholder={dPhone ? dPhone + " (Default)": 'Phone Number'}
                 />
                 <CustomInput
                     value={vacantPlaces}
