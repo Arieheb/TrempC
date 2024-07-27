@@ -306,7 +306,7 @@ const NewGroup = () => {
                 <CustomInput
                     value={groupName}
                     setValue={setGroupName}
-                    placeholder="Enter group name"
+                    placeholder="Enter group name*"
                 />
                 <CustomInput
                     value={groupDescription}
