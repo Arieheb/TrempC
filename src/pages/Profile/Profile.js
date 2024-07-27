@@ -53,68 +53,70 @@ const Profile = () => {
     }, [user]);
 
     const saveDataPress = async () => {
-        const namePattern = /^[A-Za-z]+$/;
+    const namePattern = /^[A-Za-z\s]*$/;
 
-        if (!firstName.match(namePattern)) {
-            Alert.alert('Error', 'First name should only contain English characters');
-            return;
-        }
+    if (!firstName.match(namePattern)) {
+        Alert.alert('Error', 'First name should only contain English characters');
+        return;
+    }
 
-        if (!lastName.match(namePattern)) {
-            Alert.alert('Error', 'Last name should only contain English characters');
-            return;
-        }
+    if (!lastName.match(namePattern)) {
+        Alert.alert('Error', 'Last name should only contain English characters');
+        return;
+    }
 
-        if (!tempImageUri &&
-            email === initialData.email &&
-            firstName === initialData.firstName &&
-            lastName === initialData.lastName &&
-            phone === initialData.phone &&
-            !password.trim()) {
-            Alert.alert('No changes to be saved.');
-            return;
-        }
+    if (!tempImageUri &&
+        email === initialData.email &&
+        firstName === initialData.firstName &&
+        lastName === initialData.lastName &&
+        phone === initialData.phone &&
+        !password.trim()) {
+        Alert.alert('No changes to be saved.');
+        return;
+    }
 
-        const userUpdates = {
-            firstName: firstName || initialData.firstName,
-            lastName: lastName || initialData.lastName,
-            phone: phone || initialData.phone,
-        };
-
-        if (email !== initialData.email) {
-            userUpdates.email = email;
-        }
-
-        if (Object.keys(userUpdates).length > 0) {
-            await setDoc(userDoc, userUpdates, { merge: true });
-        }
-
-        if (password.trim()) {
-            try {
-                await updatePassword(auth.currentUser, password);
-            } catch (error) {
-                Alert.alert("Error updating password:", error.message);
-            }
-        }
-
-        if (tempImageUri) {
-            await uploadProfileImage(tempImageUri);
-        }
-
-        // Update the context with the new profile information
-        setUserProfile((prevState) => ({
-            ...prevState,
-            fullName: `${userUpdates.firstName} ${userUpdates.lastName}`,
-        }));
-
-        Alert.alert("Changes saved successfully!");
-        navigation.dispatch(CommonActions.reset({
-            index: 0,
-            routes: [
-                { name: 'homeScreen' }
-            ],
-        }));
+    const userUpdates = {
+        firstName: firstName || initialData.firstName,
+        lastName: lastName || initialData.lastName,
+        phone: phone || initialData.phone,
     };
+
+    if (email !== initialData.email) {
+        userUpdates.email = email;
+    }
+
+    if (password.trim()) {
+        try {
+            await updatePassword(auth.currentUser, password);
+            userUpdates.password = password; // Add the new password to the userUpdates object
+        } catch (error) {
+            Alert.alert("Error updating password:", error.message);
+        }
+    }
+
+    if (Object.keys(userUpdates).length > 0) {
+        await setDoc(userDoc, userUpdates, { merge: true });
+    }
+
+    if (tempImageUri) {
+        await uploadProfileImage(tempImageUri);
+    }
+
+    // Update the context with the new profile information
+    setUserProfile((prevState) => ({
+        ...prevState,
+        fullName: `${userUpdates.firstName} ${userUpdates.lastName}`,
+    }));
+
+    Alert.alert("Changes saved successfully!");
+    navigation.dispatch(CommonActions.reset({
+        index: 0,
+        routes: [
+            { name: 'homeScreen' }
+        ],
+    }));
+};
+
 
     const uploadProfileImage = async (uri) => {
         try {
