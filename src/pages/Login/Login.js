@@ -15,16 +15,24 @@ const Login = (props) => {
     const { height } = useWindowDimensions();
     const navigation = useNavigation();
 
+    // Navigates to the Forgot Password screen
     const onForgotPasswordPress = () => {
         navigation.navigate('forgotPasswordScreen');
     }
 
+    // Navigates to the Sign Up screen
     const signUpPress = () => {
         navigation.navigate('signUpScreen');
     }
 
+    /**
+     * Handles the sign-in process.
+     * Checks if username and password are provided,
+     * attempts to sign in with Firebase Authentication,
+     * updates user document in Firestore if necessary,
+     * and navigates to the home screen.
+     */
     const handleSignIn = async () => {
-        // Check if username and password are not empty
         if (username === "" || password.trim() === "") {
             Alert.alert('Error', 'Please enter both username and password.');
             return;
@@ -34,18 +42,15 @@ const Login = (props) => {
             const userCredential = await signInWithEmailAndPassword(auth, username, password);
             const user = userCredential.user;
     
-            // Check if passHasChanged is true
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
     
             if (userDoc.exists() && userDoc.data().passHasChanged) {
                 if (userDoc.data().password === password) {
-                    // Set passHasChanged to false
                     await updateDoc(userRef, {
                         passHasChanged: false,
                     });
                 } else {
-                    // Update the password and set passHasChanged to false
                     await updatePassword(user, password);
                     await updateDoc(userRef, {
                         passHasChanged: false,
@@ -60,9 +65,7 @@ const Login = (props) => {
                     routes: [{ name: 'homeScreen' }],
                 })
             );
-            console.log(user.uid);
         } catch (error) {
-            // Differentiate between invalid email/password and other errors
             if (username.trim() !== "") {
                 Alert.alert('Error', 'Username/password are incorrect.');
             } else if (error.code === 'auth/invalid-email') {
@@ -72,7 +75,6 @@ const Login = (props) => {
             }
         }
     }
-    
 
     return (
         <ScrollView style={{ backgroundColor: 'white' }}>

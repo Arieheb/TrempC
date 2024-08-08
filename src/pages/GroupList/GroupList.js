@@ -10,6 +10,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 const GroupList = () => {
+    // State variables
     const [groups, setGroups] = useState([]);
     const [expandedGroups, setExpandedGroups] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -25,11 +26,15 @@ const GroupList = () => {
 
     const user = auth.currentUser;
 
+    // Fetches groups and contacts on component mount
     useEffect(() => {
         fetchGroups();
         preFetchContacts();
     }, []);
 
+    /**
+     * Fetches groups the user is part of from Firestore.
+     */
     const fetchGroups = async () => {
         setGroupsLoading(true);
         const q = query(collection(db, 'groups'), where('participants', 'array-contains', user.uid));
@@ -75,8 +80,10 @@ const GroupList = () => {
         setGroups(groupsList);
         setGroupsLoading(false);
     };
-    
 
+    /**
+     * Prefetches contacts from the device and requests necessary permissions.
+     */
     const preFetchContacts = async () => {
         const { status } = await Contacts.requestPermissionsAsync();
         if (status === 'granted') {
@@ -88,6 +95,12 @@ const GroupList = () => {
         }
     };
 
+    /**
+     * Toggles the visibility of a group's details.
+     * 
+     * groupId - The ID of the group to toggle.
+     * 
+     */
     const toggleGroup = (groupId) => {
         setExpandedGroups(prevState => {
             if (prevState.includes(groupId)) {
@@ -98,6 +111,11 @@ const GroupList = () => {
         });
     };
 
+    /**
+     * Handles the deletion of a group.
+     * 
+     * group - The group object to delete.
+     */
     const handleDeleteGroup = async (group) => {
         Alert.alert(
             'Confirm Delete',
@@ -134,8 +152,13 @@ const GroupList = () => {
             ]
         );
     };
-    
 
+    /**
+     * Retrieves user details from Firestore.
+     * 
+     * userId - The ID of the user to fetch details for.
+     * returns an object containing the user's full name and phone number.     
+     */
     const getUserDetails = async (userId) => {
         try {
             const userDoc = await getDoc(doc(db, 'users', userId));
@@ -147,17 +170,27 @@ const GroupList = () => {
                     phoneNumber: userData.phoneNumber,
                 };
             } else {
+                // Handle case when user does not exist
             }
         } catch (error) {
+            // Handle error
         }
         return { fullName: 'Unknown', phoneNumber: 'Unknown' };
     };
 
+    /**
+     * Initiates the process of adding participants to a group.
+     * 
+     * group - The group object to add participants to.
+     */
     const handleAddParticipants = (group) => {
         setCurrentGroup(group);
         setModalVisible(true);
     };
 
+    /**
+     * Loads contacts from the device.
+     */
     const loadContacts = async () => {
         const { data } = await Contacts.getContactsAsync();
         if (data.length > 0) {
@@ -181,6 +214,12 @@ const GroupList = () => {
         }
     };
 
+    /**
+     * Toggles the selection of a contact.
+     * 
+     * contactId - The ID of the contact to toggle.
+     
+     */
     const toggleContactSelection = (contactId) => {
         if (tempSelectedContacts.includes(contactId)) {
             setTempSelectedContacts(tempSelectedContacts.filter(id => id !== contactId));
@@ -189,6 +228,11 @@ const GroupList = () => {
         }
     };
 
+    /**
+     * Handles the search functionality for contacts.
+     * 
+     * text - The search query.
+     */
     const handleSearch = (text) => {
         setSearchQuery(text);
         if (text) {
@@ -202,6 +246,9 @@ const GroupList = () => {
         }
     };
 
+    /**
+     * Confirms the selection of participants and updates Firestore.
+     */
     const handleConfirm = async () => {
         if (!currentGroup) return;
 
@@ -280,6 +327,9 @@ const GroupList = () => {
         setCurrentGroup(null);
     };
 
+    /**
+     * Cancels the current participant addition operation.
+     */
     const handleCancel = () => {
         setTempSelectedContacts([]);
         setSearchQuery('');
@@ -287,11 +337,20 @@ const GroupList = () => {
         setModalVisible(false);
     };
 
+    /**
+     * Clears the search query and resets the contact list.
+     */
     const clearSearch = () => {
         setSearchQuery('');
         setFilteredContacts(contacts);
     };
 
+    /**
+     * Retrieves the name of a contact.
+     * 
+     * contact - The contact object.
+     * returns a string with the contact's name.
+     */
     const getContactName = (contact) => {
         if (contact.name) return contact.name;
         if (contact.firstName && contact.middleName && contact.lastName) return `${contact.firstName} ${contact.middleName} ${contact.lastName}`;
@@ -301,6 +360,13 @@ const GroupList = () => {
         return 'No Name';
     };
 
+    /**
+     * Adds or removes a user as an admin for a group.
+     * 
+     * groupID - The ID of the group.
+     * userID - The ID of the user to toggle.
+     * 
+     */
     const makeAdmin = async (groupId, userId) => {
         const groupDocRef = doc(db, 'groups', groupId);
         await updateDoc(groupDocRef, {
@@ -309,6 +375,13 @@ const GroupList = () => {
         fetchGroups();
     };
 
+    /**
+     * Removes a participant from a group.
+     * 
+     * groupId - The ID of the group.
+     * userId - The ID of the user to remove.
+     * 
+     */
     const removeParticipant = async (groupId, userId) => {
         const groupDocRef = doc(db, 'groups', groupId);
         await updateDoc(groupDocRef, {
@@ -324,6 +397,12 @@ const GroupList = () => {
         fetchGroups();
     };
 
+    /**
+     * Component representing a single group item.
+     * 
+     * item - The group item data.
+     * returns a JSX element representing the group item.
+     */
     const GroupItem = ({ item }) => {
         const isAdmin = item.groupAdmins && item.groupAdmins.includes(user.uid);
     
@@ -366,13 +445,6 @@ const GroupList = () => {
             <View>
                 <View style={styles.tableRow}>
                     <View style={styles.profileAndName}>
-                        {/* {item.profilePictureUrl ? (
-                            <Image source={{ uri: item.profilePictureUrl }} style={styles.profilePicture} />
-                        ) : (
-                            <View style={styles.profilePicturePlaceholder}>
-                                <Icon name="group" size={25} color="#ccc" />
-                            </View>
-                        )} */}
                         <Text style={styles.groupName}>{item.groupName}</Text>
                     </View>
                     <View style={styles.icons}>
@@ -511,7 +583,6 @@ const GroupList = () => {
         </View>
     );
 };
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

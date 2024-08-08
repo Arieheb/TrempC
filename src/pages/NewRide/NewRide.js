@@ -32,14 +32,14 @@ const NewRide = () => {
 
     const navigation = useNavigation();
 
+    // Fetch user details and set default driver name and phone number
     useEffect(() => {
         if (user) {
             const userDoc = doc(db, "users", user.uid);
             getDoc(userDoc).then(docSnap => {
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
-                    const fullName = userData.firstName + " " + userData.lastName;
-                    const phoneNumber = userData.phone;
+                    const fullName = `${userData.firstName} ${userData.lastName}`;
                     setDriverName(fullName);
                     setDPhone(userData.phone);
                 }
@@ -47,6 +47,12 @@ const NewRide = () => {
         }
     }, [user]);
 
+    /**
+     * Handles the change of date in the date picker.
+     * 
+     * event - The event object.
+     * selectedDate - The selected date.
+     */
     const onChangeDate = (event, selectedDate) => {
         setShowDatePicker(false);
         if (selectedDate) {
@@ -55,6 +61,12 @@ const NewRide = () => {
         }
     };
 
+    /**
+     * Handles the change of time in the time picker.
+     * 
+     * event - The event object.
+     * selectedTime - The selected time.
+     */
     const onChangeTime = (event, selectedTime) => {
         setShowTimePicker(false);
         if (selectedTime) {
@@ -64,6 +76,10 @@ const NewRide = () => {
         }
     };
 
+    /**
+     * Saves the new ride to Firestore.
+     * Validates required fields and saves the ride details.
+     */
     const handleSave = () => {
         if (!source || !dest || !driverName || !dPhone || !vacantPlaces) {
             Alert.alert('Error', 'Please fill in all required fields.');
@@ -100,17 +116,18 @@ const NewRide = () => {
             });
     };
 
+    /**
+     * Navigates back to the home screen.
+     */
     const returnPress = () => {
         navigation.dispatch(CommonActions.reset({
             index: 0,
-            routes: [
-                { name: 'homeScreen' }
-            ],
+            routes: [{ name: 'homeScreen' }],
         }));
     };
 
     return (
-        <KeyboardAvoidingView style = {styles.container}>
+        <KeyboardAvoidingView style={styles.container}>
             <Text style={styles.title}>New Ride</Text>
 
             <KeyboardAvoidingView style={styles.addressRow}>
@@ -135,7 +152,7 @@ const NewRide = () => {
                         }
                     }}
                     query={{
-                        key: 'AIzaSyBAJPGIdDzvvJP6Wos4PgwaKP4A2FZ2Nlk',
+                        key: 'YOUR_GOOGLE_PLACES_API_KEY',
                         language: 'en',
                     }}
                 />
@@ -161,7 +178,7 @@ const NewRide = () => {
                         }
                     }}
                     query={{
-                        key: 'AIzaSyBAJPGIdDzvvJP6Wos4PgwaKP4A2FZ2Nlk',
+                        key: 'YOUR_GOOGLE_PLACES_API_KEY',
                         language: 'en',
                     }}
                 />
@@ -214,11 +231,11 @@ const NewRide = () => {
             <KeyboardAvoidingView style={{ alignItems: 'center' }}>
                 <CustomInput
                     setValue={setDriverName}
-                    placeholder={driverName ? driverName + " (Default)": 'Driver Name '}
+                    placeholder={driverName ? `${driverName} (Default)` : 'Driver Name '}
                 />
                 <CustomInput
                     setValue={setDPhone}
-                    placeholder={dPhone ? dPhone + " (Default)": 'Phone Number'}
+                    placeholder={dPhone ? `${dPhone} (Default)` : 'Phone Number'}
                 />
                 <CustomInput
                     value={vacantPlaces}
@@ -243,7 +260,6 @@ const NewRide = () => {
                     onPress={handleSave}
                     text="Save"
                     bgColor={'green'}
-
                 />
 
                 <CustomButton
@@ -294,9 +310,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: 'white',
     },
-    itemContainer: {
-
-    }
+    itemContainer: {},
 });
 
 export default NewRide;

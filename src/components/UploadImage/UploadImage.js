@@ -6,6 +6,17 @@ import { storage } from '../../../firebaseConfig';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 
+/**
+ * UploadPhoto component allows users to upload or take a new photo,
+ * and displays the uploaded image.
+ *
+ * storagePath: The storage path where the image will be saved.
+ * imageName: The name of the image file.
+ * defaultImage: The default image to display if no image is uploaded.
+ * onImageUpload: The function to call after an image is uploaded.
+ * shouldFetch: Flag to indicate whether to fetch the image from storage.
+ */
+
 const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shouldFetch = true }) => {
     const [image, setImage] = useState(null);
     const { showActionSheetWithOptions } = useActionSheet();
@@ -25,6 +36,9 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shou
         }
     }, [shouldFetch, storagePath, imageName]);
 
+    /**
+     * Shows the action sheet with options to upload or take a picture.
+     */
     const showActionSheet = () => {
         const options = ['Upload from Gallery', 'Take a Picture', 'Cancel'];
         const cancelButtonIndex = 2;
@@ -44,6 +58,9 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shou
         );
     };
 
+    /**
+     * Handles image upload from the gallery.
+     */
     const uploadPic = async () => {
         try {
             let result = await ImagePicker.launchImageLibraryAsync({
@@ -63,6 +80,9 @@ const UploadPhoto = ({ storagePath, imageName, defaultImage, onImageUpload, shou
         }
     };
 
+    /**
+     * Handles taking a new picture using the camera.
+     */
     const takePic = async () => {
         try {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();

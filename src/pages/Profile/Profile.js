@@ -9,8 +9,8 @@ import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import UploadPhoto from '../../components/UploadImage/UploadImage';
-import ProfileImage from '../../../assets/images/profile.png'; // Import the local image
-import { useUser } from '../../../UserContext'; // Import the user context
+import ProfileImage from '../../../assets/images/profile.png';
+import { useUser } from '../../../UserContext';
 
 const Profile = () => {
     const [email, setEmail] = useState('');
@@ -19,19 +19,18 @@ const Profile = () => {
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
     const [initialData, setInitialData] = useState({});
-    const [image, setImage] = useState(ProfileImage); // Use local image as default
+    const [image, setImage] = useState(ProfileImage);
     const [tempImageUri, setTempImageUri] = useState(null);
     const navigation = useNavigation();
     const hasFetchedData = useRef(false);
     const { showActionSheetWithOptions } = useActionSheet();
-    const { userProfile, setUserProfile } = useUser(); // Use the user context
+    const { userProfile, setUserProfile } = useUser();
 
     const userDoc = doc(db, "users", auth.currentUser.uid);
     const user = auth.currentUser;
 
     useEffect(() => {
         if (user && !hasFetchedData.current) {
-            const uID = user.uid;
             const getUserData = async () => {
                 try {
                     const userDocSnap = await getDoc(userDoc);
@@ -52,72 +51,77 @@ const Profile = () => {
         }
     }, [user]);
 
+    /**
+     * Handles saving the updated user data to Firestore.
+     * Validates the input fields and updates the user profile and password if changed.
+     */
     const saveDataPress = async () => {
-    const namePattern = /^[A-Za-z\s]*$/;
+        const namePattern = /^[A-Za-z\s]*$/;
 
-    if (!firstName.match(namePattern)) {
-        Alert.alert('Error', 'First name should only contain English characters');
-        return;
-    }
+        if (!firstName.match(namePattern)) {
+            Alert.alert('Error', 'First name should only contain English characters');
+            return;
+        }
 
-    if (!lastName.match(namePattern)) {
-        Alert.alert('Error', 'Last name should only contain English characters');
-        return;
-    }
+        if (!lastName.match(namePattern)) {
+            Alert.alert('Error', 'Last name should only contain English characters');
+            return;
+        }
 
-    if (!tempImageUri &&
-        email === initialData.email &&
-        firstName === initialData.firstName &&
-        lastName === initialData.lastName &&
-        phone === initialData.phone &&
-        !password.trim()) {
-        Alert.alert('No changes to be saved.');
-        return;
-    }
+        if (!tempImageUri &&
+            email === initialData.email &&
+            firstName === initialData.firstName &&
+            lastName === initialData.lastName &&
+            phone === initialData.phone &&
+            !password.trim()) {
+            Alert.alert('No changes to be saved.');
+            return;
+        }
 
-    const userUpdates = {
-        firstName: firstName || initialData.firstName,
-        lastName: lastName || initialData.lastName,
-        phone: phone || initialData.phone,
+        const userUpdates = {
+            firstName: firstName || initialData.firstName,
+            lastName: lastName || initialData.lastName,
+            phone: phone || initialData.phone,
+        };
+
+        if (email !== initialData.email) {
+            userUpdates.email = email;
+        }
+
+        if (password.trim()) {
+            try {
+                await updatePassword(auth.currentUser, password);
+                userUpdates.password = password;
+            } catch (error) {
+                Alert.alert("Error updating password:", error.message);
+            }
+        }
+
+        if (Object.keys(userUpdates).length > 0) {
+            await setDoc(userDoc, userUpdates, { merge: true });
+        }
+
+        if (tempImageUri) {
+            await uploadProfileImage(tempImageUri);
+        }
+
+        setUserProfile((prevState) => ({
+            ...prevState,
+            fullName: `${userUpdates.firstName} ${userUpdates.lastName}`,
+        }));
+
+        Alert.alert("Changes saved successfully!");
+        navigation.dispatch(CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'homeScreen' }],
+        }));
     };
 
-    if (email !== initialData.email) {
-        userUpdates.email = email;
-    }
-
-    if (password.trim()) {
-        try {
-            await updatePassword(auth.currentUser, password);
-            userUpdates.password = password; // Add the new password to the userUpdates object
-        } catch (error) {
-            Alert.alert("Error updating password:", error.message);
-        }
-    }
-
-    if (Object.keys(userUpdates).length > 0) {
-        await setDoc(userDoc, userUpdates, { merge: true });
-    }
-
-    if (tempImageUri) {
-        await uploadProfileImage(tempImageUri);
-    }
-
-    // Update the context with the new profile information
-    setUserProfile((prevState) => ({
-        ...prevState,
-        fullName: `${userUpdates.firstName} ${userUpdates.lastName}`,
-    }));
-
-    Alert.alert("Changes saved successfully!");
-    navigation.dispatch(CommonActions.reset({
-        index: 0,
-        routes: [
-            { name: 'homeScreen' }
-        ],
-    }));
-};
-
-
+    /**
+     * Uploads the selected profile image to Firebase Storage.
+     * 
+     * uri - The URI of the selected image.
+     */
     const uploadProfileImage = async (uri) => {
         try {
             const response = await fetch(uri);
@@ -138,15 +142,20 @@ const Profile = () => {
         }
     };
 
+    /**
+     * Navigates back to the home screen.
+     */
     const returnPress = () => {
         navigation.dispatch(CommonActions.reset({
             index: 0,
-            routes: [
-                { name: 'homeScreen' }
-            ],
+            routes: [{ name: 'homeScreen' }],
         }));
     };
 
+    /**
+     * Handles user sign out.
+     * Displays a confirmation alert before signing out the user.
+     */
     const handleSignOut = () => {
         Alert.alert(
             "Sign Out",
@@ -162,9 +171,7 @@ const Profile = () => {
                         auth.signOut().then(() => {
                             navigation.dispatch(CommonActions.reset({
                                 index: 0,
-                                routes: [
-                                    { name: 'loginScreen' }
-                                ],
+                                routes: [{ name: 'loginScreen' }],
                             }));
                         }).catch((error) => {
                             Alert.alert("Error signing out:", error.message);
@@ -175,10 +182,21 @@ const Profile = () => {
         );
     };
 
+    /**
+     * Handles the selection of a new profile image.
+     * 
+     * imageUri - The URI of the selected image.
+     */
     const handleImageUpload = (imageUri) => {
         setTempImageUri(imageUri);
         setImage({ uri: imageUri });
     };
+
+    /**
+     * Validates and sets the first name input.
+     * 
+     * value - The input value.
+     */
 
     const handleFirstNameChange = (value) => {
         const namePattern = /^[A-Za-z\s]*$/;
@@ -189,6 +207,12 @@ const Profile = () => {
         }
     };
 
+    /**
+     * Validates and sets the last name input.
+     * 
+     * value - The input value.
+     *
+     */
     const handleLastNameChange = (value) => {
         const namePattern = /^[A-Za-z\s]*$/;
         if (value.match(namePattern) || value === '') {
@@ -206,8 +230,8 @@ const Profile = () => {
                         <UploadPhoto
                             storagePath="profile"
                             imageName={email.toLowerCase()}
-                            defaultImage={ProfileImage} // Pass the local image as default
-                            onImageUpload={handleImageUpload} // Handle image upload
+                            defaultImage={ProfileImage}
+                            onImageUpload={handleImageUpload}
                         />
                     ) : (
                         <Text>Loading...</Text>
@@ -230,7 +254,7 @@ const Profile = () => {
                 />
 
                 <CustomInput
-                    placeholder={initialData.password || "Password"}
+                    placeholder="Password"
                     secureTextEntry={true}
                     value={password}
                     setValue={setPassword}
@@ -257,7 +281,7 @@ const Profile = () => {
             </View>
         </ScrollView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     scrollViewContainer: {
