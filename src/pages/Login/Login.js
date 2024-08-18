@@ -60,7 +60,6 @@ const Login = (props) => {
                     routes: [{ name: 'homeScreen' }],
                 })
             );
-            console.log(user.uid);
         } catch (error) {
             // Differentiate between invalid email/password and other errors
             if (username.trim() !== "") {

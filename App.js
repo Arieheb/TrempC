@@ -14,9 +14,7 @@ import { UserProvider } from './UserContext.js';
 import homePage from './src/pages/Home/Home.js';
 import loginPage from './src/pages/Login/Login.js';
 import signUpPage from './src/pages/SignUp/SignUp.js';
-import confirmEmailPage from './src/pages/ConfirmEmail/ConfirmEmail.js';
 import forgotPasswordPage from './src/pages/ForgotPassword/ForgotPassword.js';
-import newPasswordPage from './src/pages/NewPassword/NewPassword.js';
 import profilePage from './src/pages/Profile/Profile.js';
 import newGroupsPage from './src/pages/NewGroup/NewGroup.js';
 import gListPage from './src/pages/GroupList/GroupList.js';
@@ -30,8 +28,6 @@ function AuthStack() {
     <Stack.Navigator>
       <Stack.Screen name="loginScreen" component={loginPage} options={{ title: null }} />
       <Stack.Screen name="forgotPasswordScreen" component={forgotPasswordPage} options={{ title: null }} />
-      <Stack.Screen name="newPasswordScreen" component={newPasswordPage} options={{ title: null }} />
-      <Stack.Screen name="confirmScreen" component={confirmEmailPage} options={{ title: null }} />
       <Stack.Screen name="signUpScreen" component={signUpPage} options={{ title: null }} />
     </Stack.Navigator>
   );
