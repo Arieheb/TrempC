@@ -10,7 +10,6 @@ import { auth, bd, storage } from './firebaseConfig';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import CustomDrawerContent from './Drawer';
 import { UserProvider } from './UserContext.js';
-
 //// page imports ////
 import homePage from './src/pages/Home/Home.js';
 import loginPage from './src/pages/Login/Login.js';
@@ -32,6 +31,7 @@ function AuthStack() {
       <Stack.Screen name="loginScreen" component={loginPage} options={{ title: null }} />
       <Stack.Screen name="forgotPasswordScreen" component={forgotPasswordPage} options={{ title: null }} />
       <Stack.Screen name="newPasswordScreen" component={newPasswordPage} options={{ title: null }} />
+      <Stack.Screen name="confirmScreen" component={confirmEmailPage} options={{ title: null }} />
       <Stack.Screen name="signUpScreen" component={signUpPage} options={{ title: null }} />
     </Stack.Navigator>
   );

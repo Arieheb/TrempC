@@ -30,9 +30,6 @@ const NewGroup = () => {
 
     const navigation = useNavigation();
 
-    /**
-     * Handles saving the new group to Firestore.
-     */
     const handleSave = async () => {
         if (!groupName) {
             Alert.alert('Error', 'Group Name is required');
@@ -53,6 +50,7 @@ const NewGroup = () => {
             if (tempImageUri) {
                 await uploadGroupImage(tempImageUri, groupRef.id);
             } else {
+                // Use the communLogo if no image is uploaded
                 const response = await fetch(Image.resolveAssetSource(communLogo).uri);
                 const blob = await response.blob();
                 const storageRef = ref(storage, `groupPic/${groupRef.id}`);
@@ -60,8 +58,10 @@ const NewGroup = () => {
                 await uploadTask;
             }
 
+            // Update the group document with the image storage reference ID
             await updateDoc(doc(db, 'groups', groupRef.id), { groupImage: groupRef.id });
 
+            // Fetch all users from the database
             const usersSnapshot = await getDocs(collection(db, 'users'));
             const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
@@ -90,6 +90,7 @@ const NewGroup = () => {
                 }
             });
 
+            // Alert the user about unregistered contacts
             if (unmatchedContacts.length > 0) {
                 const unregisteredNames = unmatchedContacts.map(contactId => {
                     const contact = contacts.find(c => c.id === contactId);
@@ -99,13 +100,16 @@ const NewGroup = () => {
                 setUnregisteredContacts(unmatchedContacts);
             }
 
+            // Update the participants field with matched UIDs
             await updateDoc(groupRef, { participants: arrayUnion(...matchedUids) });
 
+            // Update user's groups field
             const userDocRef = doc(db, 'users', uId);
             await updateDoc(userDocRef, {
                 groups: arrayUnion(groupRef.id)
             });
 
+            // Update all other matched users' groups field
             const updateParticipantsPromises = matchedUids.map(async (participantUid) => {
                 const participantDocRef = doc(db, 'users', participantUid);
                 await updateDoc(participantDocRef, {
@@ -124,12 +128,6 @@ const NewGroup = () => {
         }
     };
 
-    /**
-     * Uploads the group image to Firebase Storage.
-     * 
-     * uri - The URI of the image to upload.
-     * groupId - The ID of the group.
-     */
     const uploadGroupImage = async (uri, groupId) => {
         try {
             const response = await fetch(uri);
@@ -139,15 +137,13 @@ const NewGroup = () => {
 
             await uploadTask;
 
+            // Update group document with the image storage reference ID
             await updateDoc(doc(db, 'groups', groupId), { groupImage: groupId });
         } catch (error) {
             console.log('Error uploading group image:', error);
         }
     };
 
-    /**
-     * Navigates back to the home screen without saving.
-     */
     const cancelPress = () => {
         navigation.dispatch(CommonActions.reset({
             index: 0,
@@ -155,18 +151,10 @@ const NewGroup = () => {
         }));
     };
 
-    /**
-     * Sets the temporary image URI for the group.
-     * imageUri - The URI of the selected image.
-     
-     */
     const handleImageUpload = (imageUri) => {
         setTempImageUri(imageUri);
     };
 
-    /**
-     * Requests permission to access contacts and loads them if granted.
-     */
     const requestContactsPermission = async () => {
         const { status } = await Contacts.requestPermissionsAsync();
         if (status === 'granted') {
@@ -179,26 +167,29 @@ const NewGroup = () => {
         }
     };
 
-    /**
-     * Loads contacts from the device and sorts them.
-     */
     const loadContacts = async () => {
         const { data } = await Contacts.getContactsAsync();
         if (data.length > 0) {
+            // Filter out contacts without a phone number
             const contactsWithPhoneNumbers = data.filter(contact => contact.phoneNumbers && contact.phoneNumbers.length > 0);
 
+            // Sorting contacts A-Z for English names and א-ת for Hebrew names
             const sortedData = contactsWithPhoneNumbers.sort((a, b) => {
                 const nameA = getContactName(a).toLowerCase();
                 const nameB = getContactName(b).toLowerCase();
 
+                // Check if the names are in Hebrew
                 const isHebrewA = /[\u0590-\u05FF]/.test(nameA);
                 const isHebrewB = /[\u0590-\u05FF]/.test(nameB);
 
                 if (isHebrewA && isHebrewB) {
+                    // Both names are Hebrew
                     return nameA.localeCompare(nameB, 'he');
                 } else if (!isHebrewA && !isHebrewB) {
+                    // Both names are not Hebrew
                     return nameA.localeCompare(nameB, 'en');
                 } else {
+                    // One name is Hebrew and the other is not
                     return isHebrewA ? 1 : -1;
                 }
             });
@@ -208,10 +199,6 @@ const NewGroup = () => {
         }
     };
 
-    /**
-     * Toggles the selection of a contact.
-     * contactId - The ID of the contact to toggle.
-     */
     const toggleContactSelection = (contactId) => {
         if (tempSelectedContacts.includes(contactId)) {
             setTempSelectedContacts(tempSelectedContacts.filter(id => id !== contactId));
@@ -220,10 +207,6 @@ const NewGroup = () => {
         }
     };
 
-    /**
-     * Handles search input change and filters contacts accordingly.
-     * text - The search query.
-     */
     const handleSearch = (text) => {
         setSearchQuery(text);
         if (text) {
@@ -237,9 +220,6 @@ const NewGroup = () => {
         }
     };
 
-    /**
-     * Confirms the selected contacts and updates the state.
-     */
     const handleConfirm = async () => {
         const usersSnapshot = await getDocs(collection(db, 'users'));
         const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -269,6 +249,7 @@ const NewGroup = () => {
             }
         });
 
+        // Alert the user about unregistered contacts
         if (unmatchedContacts.length > 0) {
             const unregisteredNames = unmatchedContacts.map(contactId => {
                 const contact = contacts.find(c => c.id === contactId);
@@ -277,33 +258,22 @@ const NewGroup = () => {
             Alert.alert('Notice', `The following contacts are not registered: ${unregisteredNames}`);
         }
 
+        // Filter out unregistered contacts from the selected contacts list
         const registeredContacts = tempSelectedContacts.filter(contactId => !unmatchedContacts.includes(contactId));
 
         setSelectedContacts(registeredContacts);
         setModalVisible(false);
     };
 
-    /**
-     * Cancels the current selection process.
-     */
     const handleCancel = () => {
         setModalVisible(false);
     };
 
-    /**
-     * Clears the search input and resets the contact list.
-     */
     const clearSearch = () => {
         setSearchQuery('');
         setFilteredContacts(contacts);
     };
 
-    /**
-     * Retrieves the display name of a contact.
-     * 
-     * contact - The contact object.
-     * returns string as the display name of the contact.
-     */
     const getContactName = (contact) => {
         if (contact.name)
             return contact.name;
@@ -318,10 +288,6 @@ const NewGroup = () => {
         return 'No Name';
     };
 
-    /**
-     * Removes a contact from the selected contacts list.
-     * contactId - The ID of the contact to remove.
-     */
     const removeContact = (contactId) => {
         setSelectedContacts(selectedContacts.filter(id => id !== contactId));
     };
@@ -374,6 +340,7 @@ const NewGroup = () => {
                     </View>
                 )}
 
+
                 <CustomButton
                     text="Save"
                     title="Save"
@@ -386,6 +353,7 @@ const NewGroup = () => {
                     onPress={cancelPress}
                     type="PRIMARY"
                     bgColor={'red'}
+
                 />
                 <Modal
                     visible={modalVisible}

@@ -15,35 +15,6 @@ const HomeScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    // Fetches rides when the component mounts
-    useEffect(() => {
-        fetchRides();
-    }, []);
-
-    // Filters rides based on the search query
-    useEffect(() => {
-        if (searchQuery) {
-            const queryLowerCase = searchQuery.toLowerCase();
-            const filtered = rides.filter(ride =>
-                ride.fromLocation.toLowerCase().includes(queryLowerCase) ||
-                ride.toLocation.toLowerCase().includes(queryLowerCase)
-            );
-            setFilteredRides(filtered);
-
-            if (filtered.length === 0) {
-                setErrorMessage('No existing rides match your search.');
-            } else {
-                setErrorMessage('');
-            }
-        } else {
-            setFilteredRides(rides);
-            setErrorMessage('');
-        }
-    }, [searchQuery, rides]);
-
-    /**
-     * Fetches rides for the current user based on their group memberships.
-     */
     const fetchRides = async () => {
         try {
             setLoading(true);
@@ -150,18 +121,34 @@ const HomeScreen = () => {
         }
     };
 
-    /**
-     * Handles search input change and filters rides accordingly.
-     * 
-     * text - The search query.
-     */
+    useEffect(() => {
+        fetchRides();
+    }, []);
+
+    useEffect(() => {
+        if (searchQuery) {
+            const queryLowerCase = searchQuery.toLowerCase();
+            const filtered = rides.filter(ride =>
+                ride.fromLocation.toLowerCase().includes(queryLowerCase) ||
+                ride.toLocation.toLowerCase().includes(queryLowerCase)
+            );
+            setFilteredRides(filtered);
+
+            if (filtered.length === 0) {
+                setErrorMessage('No existing rides match your search.');
+            } else {
+                setErrorMessage('');
+            }
+        } else {
+            setFilteredRides(rides);
+            setErrorMessage('');
+        }
+    }, [searchQuery, rides]);
+
     const handleSearch = (text) => {
         setSearchQuery(text);
     };
 
-    /**
-     * Clears the search query and resets the filtered rides.
-     */
     const clearSearch = () => {
         setSearchQuery('');
     };

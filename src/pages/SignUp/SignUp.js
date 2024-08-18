@@ -12,22 +12,11 @@ import profilePic from '../../../assets/images/profile.png';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 
-/**
- * Handles the sign-up process.
- * 
- * email: The user's email.
- * password: The user's password.
- * firstName: The user's first name.
- * lastName: The user's last name.
- * phone: The user's phone number.
- * returns boolean: Indicates whether the sign-up was successful.
- * 
- * 
- */
 const signUpProcess = async (email, password, firstName, lastName, phone) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const uID = userCredential.user.uid;
+        console.log(uID);
 
         await setDoc(doc(db, "users", uID), {
             email: email,
@@ -71,10 +60,6 @@ const SignUp = () => {
     const { height } = useWindowDimensions();
     const navigation = useNavigation();
 
-    /**
-     * Handles the sign-up button press.
-     * Validates the input fields and initiates the sign-up process.
-     */
     const handleSignUp = async () => {
         const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
         const namePattern = /^[A-Za-z]+$/;
@@ -97,24 +82,17 @@ const SignUp = () => {
             Alert.alert('Success', 'Verification email sent!');
             navigation.dispatch(CommonActions.reset({
                 index: 0,
-                routes: [{ name: 'homeScreen' }],
+                routes: [
+                    { name: 'homeScreen' }
+                ],
             }));
         }
     };
 
-    /**
-     * Navigates to the sign-in screen.
-     */
     const onSignInPress = () => {
         navigation.navigate('loginScreen');
     };
 
-    /**
-     * Validates and sets the first name input.
-     * 
-     * value - The input value.
-     *
-     */
     const handleFirstNameChange = (value) => {
         const namePattern = /^[A-Za-z\s]*$/;
         if (value.match(namePattern) || value === '') {
@@ -124,12 +102,6 @@ const SignUp = () => {
         }
     };
 
-    /**
-     * Validates and sets the last name input.
-     * 
-     * value - The input value.
-     *
-     */
     const handleLastNameChange = (value) => {
         const namePattern = /^[A-Za-z\s]*$/;
         if (value.match(namePattern) || value === '') {
@@ -193,6 +165,7 @@ const SignUp = () => {
                     onPress={onSignInPress}
                     type="TERTIARY"
                 />
+
             </KeyboardAvoidingView>
         </ScrollView>
     );
